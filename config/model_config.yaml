@@ -1,0 +1,478 @@
+# =============================================================================
+# RAGAMALA PAINTING GENERATOR - MODEL CONFIGURATION
+# =============================================================================
+# Comprehensive model architecture settings for SDXL 1.0 fine-tuning
+# Optimized for Ragamala painting generation on EC2 instances
+
+# =============================================================================
+# BASE MODEL CONFIGURATION
+# =============================================================================
+base_model:
+  # Primary SDXL model
+  model_name_or_path: "stabilityai/stable-diffusion-xl-base-1.0"
+  revision: null
+  variant: null
+  torch_dtype: "float16"
+  
+  # Refiner model (optional)
+  refiner_model_name_or_path: "stabilityai/stable-diffusion-xl-refiner-1.0"
+  use_refiner: false
+  refiner_revision: null
+  
+  # VAE configuration
+  vae_model_name_or_path: "madebyollin/sdxl-vae-fp16-fix"
+  vae_revision: null
+  vae_torch_dtype: "float16"
+  
+  # Safety checker
+  safety_checker: null
+  requires_safety_checker: false
+  
+  # Feature extractor
+  feature_extractor: null
+
+# =============================================================================
+# UNET CONFIGURATION
+# =============================================================================
+unet:
+  # Architecture parameters
+  sample_size: 128
+  in_channels: 4
+  out_channels: 4
+  center_input_sample: false
+  flip_sin_to_cos: true
+  freq_shift: 0
+  
+  # Down/Up sampling
+  down_block_types:
+    - "DownBlock2D"
+    - "CrossAttnDownBlock2D"
+    - "CrossAttnDownBlock2D"
+    - "DownBlock2D"
+  
+  mid_block_type: "UNetMidBlock2DCrossAttn"
+  
+  up_block_types:
+    - "UpBlock2D"
+    - "CrossAttnUpBlock2D"
+    - "CrossAttnUpBlock2D"
+    - "UpBlock2D"
+  
+  # Block parameters
+  only_cross_attention: false
+  block_out_channels: [320, 640, 1280, 1280]
+  layers_per_block: 2
+  downsample_padding: 1
+  mid_block_scale_factor: 1
+  dropout: 0.0
+  
+  # Attention configuration
+  attention_head_dim: [5, 10, 20, 20]
+  num_attention_heads: null
+  cross_attention_dim: 2048
+  encoder_hid_dim: null
+  encoder_hid_dim_type: null
+  attention_type: "default"
+  
+  # Normalization
+  norm_num_groups: 32
+  norm_eps: 1e-5
+  
+  # Activation
+  act_fn: "silu"
+  
+  # Additional features
+  use_linear_projection: true
+  class_embed_type: null
+  addition_embed_type: "text_time"
+  addition_time_embed_dim: 256
+  num_class_embeds: null
+  upcast_attention: null
+  resnet_time_scale_shift: "default"
+  resnet_skip_time_act: false
+  resnet_out_scale_factor: 1.0
+  time_embedding_type: "positional"
+  time_embedding_dim: null
+  time_embedding_act_fn: null
+  timestep_post_act: null
+  time_cond_proj_dim: null
+  conv_in_kernel: 3
+  conv_out_kernel: 3
+  projection_class_embeddings_input_dim: 2816
+  attention_processor: null
+
+# =============================================================================
+# TEXT ENCODER CONFIGURATION
+# =============================================================================
+text_encoder:
+  # Primary text encoder (CLIP ViT-L/14)
+  model_name_or_path: "openai/clip-vit-large-patch14"
+  revision: null
+  torch_dtype: "float16"
+  
+  # Architecture
+  vocab_size: 49408
+  hidden_size: 768
+  intermediate_size: 3072
+  num_hidden_layers: 12
+  num_attention_heads: 12
+  max_position_embeddings: 77
+  hidden_act: "quick_gelu"
+  layer_norm_eps: 1e-5
+  dropout: 0.0
+  attention_dropout: 0.0
+  initializer_range: 0.02
+  initializer_factor: 1.0
+  
+  # Text processing
+  pad_token_id: 1
+  bos_token_id: 0
+  eos_token_id: 2
+  
+  # Training parameters
+  freeze_text_encoder: true
+  text_encoder_use_attention_mask: false
+
+# =============================================================================
+# TEXT ENCODER 2 CONFIGURATION (SDXL Specific)
+# =============================================================================
+text_encoder_2:
+  # Secondary text encoder (OpenCLIP ViT-bigG/14)
+  model_name_or_path: "laion/CLIP-ViT-bigG-14-laion2B-39B-b160k"
+  revision: null
+  torch_dtype: "float16"
+  
+  # Architecture
+  vocab_size: 49408
+  hidden_size: 1280
+  intermediate_size: 5120
+  num_hidden_layers: 32
+  num_attention_heads: 20
+  max_position_embeddings: 77
+  hidden_act: "gelu"
+  layer_norm_eps: 1e-5
+  dropout: 0.0
+  attention_dropout: 0.0
+  
+  # Training parameters
+  freeze_text_encoder_2: true
+  text_encoder_2_use_attention_mask: false
+
+# =============================================================================
+# VAE CONFIGURATION
+# =============================================================================
+vae:
+  # Architecture parameters
+  in_channels: 3
+  out_channels: 3
+  down_block_types:
+    - "DownEncoderBlock2D"
+    - "DownEncoderBlock2D"
+    - "DownEncoderBlock2D"
+    - "DownEncoderBlock2D"
+  
+  up_block_types:
+    - "UpDecoderBlock2D"
+    - "UpDecoderBlock2D"
+    - "UpDecoderBlock2D"
+    - "UpDecoderBlock2D"
+  
+  block_out_channels: [128, 256, 512, 512]
+  layers_per_block: 2
+  act_fn: "silu"
+  latent_channels: 4
+  norm_num_groups: 32
+  sample_size: 1024
+  scaling_factor: 0.13025
+  
+  # Memory optimization
+  enable_slicing: true
+  enable_tiling: false
+  
+  # Performance settings
+  use_torch_2_0_or_xformers: true
+  force_upcast: false
+
+# =============================================================================
+# SCHEDULER CONFIGURATION
+# =============================================================================
+scheduler:
+  # Default scheduler for training
+  train_scheduler:
+    _class_name: "DDPMScheduler"
+    num_train_timesteps: 1000
+    beta_start: 0.00085
+    beta_end: 0.012
+    beta_schedule: "scaled_linear"
+    trained_betas: null
+    variance_type: "fixed_small"
+    clip_sample: false
+    prediction_type: "epsilon"
+    thresholding: false
+    dynamic_thresholding_ratio: 0.995
+    clip_sample_range: 1.0
+    sample_max_value: 1.0
+    timestep_spacing: "leading"
+    steps_offset: 1
+    rescale_betas_zero_snr: false
+  
+  # Inference scheduler
+  inference_scheduler:
+    _class_name: "DPMSolverMultistepScheduler"
+    num_train_timesteps: 1000
+    beta_start: 0.00085
+    beta_end: 0.012
+    beta_schedule: "scaled_linear"
+    trained_betas: null
+    prediction_type: "epsilon"
+    thresholding: false
+    dynamic_thresholding_ratio: 0.995
+    sample_max_value: 1.0
+    algorithm_type: "dpmsolver++"
+    solver_type: "midpoint"
+    lower_order_final: true
+    euler_at_final: false
+    use_karras_sigmas: false
+    lambda_min_clipped: -inf
+    variance_type: null
+    timestep_spacing: "linspace"
+    steps_offset: 0
+
+# =============================================================================
+# LORA CONFIGURATION
+# =============================================================================
+lora:
+  # LoRA parameters
+  r: 64
+  lora_alpha: 32
+  lora_dropout: 0.1
+  bias: "none"
+  use_rslora: false
+  use_dora: false
+  
+  # Target modules for SDXL UNet
+  target_modules:
+    unet:
+      - "to_k"
+      - "to_q"
+      - "to_v"
+      - "to_out.0"
+      - "ff.net.0.proj"
+      - "ff.net.2"
+    
+    text_encoder:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "out_proj"
+      - "fc1"
+      - "fc2"
+    
+    text_encoder_2:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "out_proj"
+      - "fc1"
+      - "fc2"
+  
+  # LoRA scaling
+  lora_scale: 1.0
+  init_lora_weights: true
+  
+  # Module-specific settings
+  modules_to_save: []
+  peft_type: "LORA"
+  task_type: "DIFFUSION"
+
+# =============================================================================
+# MEMORY OPTIMIZATION
+# =============================================================================
+memory_optimization:
+  # Attention optimization
+  enable_xformers: true
+  enable_flash_attention: false
+  enable_memory_efficient_attention: true
+  attention_slicing: "auto"
+  
+  # Model offloading
+  enable_cpu_offload: false
+  enable_model_cpu_offload: false
+  enable_sequential_cpu_offload: false
+  
+  # Gradient checkpointing
+  gradient_checkpointing: true
+  
+  # VAE optimization
+  vae_slicing: true
+  vae_tiling: false
+  
+  # Mixed precision
+  mixed_precision: "fp16"
+  allow_tf32: true
+  
+  # Memory management
+  max_memory_usage: "16GB"
+  low_cpu_mem_usage: true
+
+# =============================================================================
+# CULTURAL SPECIFIC CONFIGURATION
+# =============================================================================
+cultural_conditioning:
+  # Raga conditioning
+  enable_raga_conditioning: true
+  raga_embedding_dim: 256
+  raga_vocab_size: 50
+  
+  # Style conditioning
+  enable_style_conditioning: true
+  style_embedding_dim: 128
+  style_vocab_size: 20
+  
+  # Cultural fusion
+  cultural_fusion_method: "cross_attention"
+  cultural_attention_heads: 8
+  cultural_dropout: 0.1
+  
+  # Conditioning strength
+  raga_conditioning_scale: 1.0
+  style_conditioning_scale: 0.8
+  
+  # Cultural embeddings
+  use_learned_embeddings: true
+  embedding_init_method: "normal"
+  embedding_std: 0.02
+
+# =============================================================================
+# GENERATION PARAMETERS
+# =============================================================================
+generation:
+  # Default generation settings
+  num_inference_steps: 30
+  guidance_scale: 7.5
+  negative_prompt: "blurry, low quality, distorted, modern, western art, cartoon, anime"
+  
+  # Image dimensions
+  height: 1024
+  width: 1024
+  
+  # Advanced parameters
+  eta: 0.0
+  generator_seed: null
+  latents: null
+  prompt_embeds: null
+  negative_prompt_embeds: null
+  pooled_prompt_embeds: null
+  negative_pooled_prompt_embeds: null
+  
+  # Output settings
+  output_type: "pil"
+  return_dict: true
+  callback: null
+  callback_steps: 1
+  
+  # Cross attention kwargs
+  cross_attention_kwargs: null
+  guidance_rescale: 0.0
+  original_size: null
+  crops_coords_top_left: [0, 0]
+  target_size: null
+  negative_original_size: null
+  negative_crops_coords_top_left: [0, 0]
+  negative_target_size: null
+
+# =============================================================================
+# CONTROLNET CONFIGURATION (Optional)
+# =============================================================================
+controlnet:
+  # Enable ControlNet
+  enable_controlnet: false
+  
+  # ControlNet model
+  controlnet_model_name_or_path: "diffusers/controlnet-canny-sdxl-1.0"
+  controlnet_conditioning_scale: 1.0
+  
+  # Control types
+  control_types:
+    - "canny"
+    - "depth"
+    - "pose"
+    - "segmentation"
+  
+  # Processing parameters
+  control_guidance_start: 0.0
+  control_guidance_end: 1.0
+
+# =============================================================================
+# ADAPTER CONFIGURATION (Optional)
+# =============================================================================
+adapter:
+  # T2I Adapter
+  enable_adapter: false
+  adapter_model_name_or_path: "TencentARC/t2iadapter_canny_sdxl_1.0"
+  adapter_conditioning_scale: 1.0
+  adapter_conditioning_factor: 1.0
+
+# =============================================================================
+# IP ADAPTER CONFIGURATION (Optional)
+# =============================================================================
+ip_adapter:
+  # IP Adapter for image conditioning
+  enable_ip_adapter: false
+  ip_adapter_model_name_or_path: "h94/IP-Adapter"
+  ip_adapter_subfolder: "sdxl_models"
+  ip_adapter_weight_name: "ip-adapter_sdxl.bin"
+  ip_adapter_scale: 0.6
+
+# =============================================================================
+# QUANTIZATION CONFIGURATION
+# =============================================================================
+quantization:
+  # Enable quantization
+  enable_quantization: false
+  
+  # Quantization method
+  quantization_method: "bitsandbytes"
+  
+  # 8-bit quantization
+  load_in_8bit: false
+  
+  # 4-bit quantization
+  load_in_4bit: false
+  bnb_4bit_compute_dtype: "float16"
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true
+
+# =============================================================================
+# COMPILATION CONFIGURATION
+# =============================================================================
+compilation:
+  # Torch compile
+  enable_torch_compile: false
+  torch_compile_mode: "reduce-overhead"
+  torch_compile_dynamic: false
+  
+  # TensorRT
+  enable_tensorrt: false
+  tensorrt_precision: "fp16"
+  
+  # ONNX
+  enable_onnx: false
+  onnx_opset_version: 14
+
+# =============================================================================
+# VALIDATION CONFIGURATION
+# =============================================================================
+validation:
+  # Model validation
+  validate_model_architecture: true
+  check_model_compatibility: true
+  verify_checkpoint_integrity: true
+  
+  # Performance validation
+  benchmark_inference_speed: false
+  measure_memory_usage: false
+  
+  # Quality validation
+  validate_output_quality: true
+  quality_threshold: 0.7

@@ -1,0 +1,361 @@
+# Prometheus configuration for Ragamala Painting Generator monitoring
+# This file defines scraping jobs, alerting rules, and global settings
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    cluster: 'ragamala-production'
+    environment: 'production'
+    project: 'ragamala-painting-generator'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      scheme: http
+      timeout: 10s
+      api_version: v2
+
+# Rules files for alerting
+rule_files:
+  - "rules/api_alerts.yml"
+  - "rules/training_alerts.yml"
+  - "rules/infrastructure_alerts.yml"
+  - "rules/ml_model_alerts.yml"
+  - "rules/gpu_alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # FastAPI application monitoring
+  - job_name: 'ragamala-api'
+    static_configs:
+      - targets: 
+        - 'ragamala-api-service:8000'
+        - 'api-server-1:8000'
+        - 'api-server-2:8000'
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'ragamala-api-service:8000'
+
+  # Training service monitoring
+  - job_name: 'ragamala-training'
+    static_configs:
+      - targets:
+        - 'training-server-1:8080'
+        - 'training-server-2:8080'
+    metrics_path: /metrics
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    metric_relabeling_configs:
+      - source_labels: [__name__]
+        regex: 'training_.*'
+        target_label: component
+        replacement: 'training'
+
+  # Gradio frontend monitoring
+  - job_name: 'ragamala-frontend'
+    static_configs:
+      - targets:
+        - 'ragamala-frontend-service:7860'
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Redis monitoring
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+        - 'redis-service:6379'
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # PostgreSQL monitoring
+  - job_name: 'postgres'
+    static_configs:
+      - targets:
+        - 'postgres-service:9187'
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Node Exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+        - 'node-exporter:9100'
+        - 'training-node-1:9100'
+        - 'inference-node-1:9100'
+        - 'inference-node-2:9100'
+    metrics_path: /metrics
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):(.*)'
+        target_label: 'instance'
+        replacement: '${1}'
+
+  # GPU metrics monitoring
+  - job_name: 'nvidia-gpu'
+    static_configs:
+      - targets:
+        - 'training-node-1:9400'
+        - 'inference-node-1:9400'
+        - 'inference-node-2:9400'
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+
+  # cAdvisor for container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets:
+        - 'cadvisor:8080'
+    metrics_path: /metrics
+    scrape_interval: 30s
+    metric_relabeling_configs:
+      - source_labels: [container_label_com_docker_compose_service]
+        target_label: service_name
+      - source_labels: [container_label_com_docker_compose_project]
+        target_label: project_name
+
+  # Kubernetes API server monitoring
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  # Kubernetes nodes monitoring
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  # Kubernetes pods monitoring
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # MLflow tracking server monitoring
+  - job_name: 'mlflow'
+    static_configs:
+      - targets:
+        - 'mlflow-service:5000'
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+  # TensorBoard monitoring
+  - job_name: 'tensorboard'
+    static_configs:
+      - targets:
+        - 'tensorboard-service:6006'
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+  # Jupyter notebook monitoring
+  - job_name: 'jupyter'
+    static_configs:
+      - targets:
+        - 'jupyter-service:8888'
+    metrics_path: /metrics
+    scrape_interval: 60s
+
+  # AWS CloudWatch exporter
+  - job_name: 'cloudwatch-exporter'
+    static_configs:
+      - targets:
+        - 'cloudwatch-exporter:9106'
+    metrics_path: /metrics
+    scrape_interval: 300s
+    scrape_timeout: 120s
+
+  # S3 bucket monitoring
+  - job_name: 's3-exporter'
+    static_configs:
+      - targets:
+        - 's3-exporter:9340'
+    metrics_path: /metrics
+    scrape_interval: 300s
+
+  # Load balancer monitoring
+  - job_name: 'nginx-exporter'
+    static_configs:
+      - targets:
+        - 'nginx-exporter:9113'
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Elasticsearch monitoring
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets:
+        - 'elasticsearch-exporter:9114'
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Custom application metrics
+  - job_name: 'ragamala-custom-metrics'
+    static_configs:
+      - targets:
+        - 'custom-metrics-exporter:9200'
+    metrics_path: /metrics
+    scrape_interval: 30s
+    metric_relabeling_configs:
+      - source_labels: [__name__]
+        regex: 'ragamala_.*'
+        target_label: application
+        replacement: 'ragamala-generator'
+
+  # Model performance monitoring
+  - job_name: 'model-metrics'
+    static_configs:
+      - targets:
+        - 'model-monitor-service:9300'
+    metrics_path: /metrics
+    scrape_interval: 60s
+    honor_labels: true
+    params:
+      collect[]: ['model_inference_time', 'model_accuracy', 'model_throughput']
+
+  # Data pipeline monitoring
+  - job_name: 'data-pipeline'
+    static_configs:
+      - targets:
+        - 'data-pipeline-service:9400'
+    metrics_path: /metrics
+    scrape_interval: 120s
+
+  # Backup service monitoring
+  - job_name: 'backup-service'
+    static_configs:
+      - targets:
+        - 'backup-service:9500'
+    metrics_path: /metrics
+    scrape_interval: 300s
+
+  # Security scanner monitoring
+  - job_name: 'security-scanner'
+    static_configs:
+      - targets:
+        - 'security-scanner:9600'
+    metrics_path: /metrics
+    scrape_interval: 3600s
+
+  # Blackbox exporter for endpoint monitoring
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - 'http://ragamala-api-service:8000/health'
+        - 'http://ragamala-frontend-service:7860'
+        - 'http://mlflow-service:5000'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Federation from other Prometheus instances
+  - job_name: 'federate'
+    scrape_interval: 15s
+    honor_labels: true
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{job=~"ragamala.*"}'
+        - '{__name__=~"job:.*"}'
+        - '{__name__=~"node_.*"}'
+    static_configs:
+      - targets:
+        - 'prometheus-region-1:9090'
+        - 'prometheus-region-2:9090'
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "https://prometheus-remote-write.monitoring.svc.cluster.local/api/v1/write"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+    metadata_config:
+      send: true
+      send_interval: 30s
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'go_.*'
+        action: drop
+
+# Remote read configuration
+remote_read:
+  - url: "https://prometheus-remote-read.monitoring.svc.cluster.local/api/v1/read"
+    read_recent: true
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 15d
+    retention.size: 50GB
+    wal-compression: true

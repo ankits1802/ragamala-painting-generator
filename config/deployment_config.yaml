@@ -1,0 +1,463 @@
+# =============================================================================
+# RAGAMALA PAINTING GENERATOR - DEPLOYMENT CONFIGURATION
+# =============================================================================
+# Comprehensive inference server settings for SDXL 1.0 fine-tuning
+# Optimized for EC2 deployment with GPU support and production scaling
+
+# =============================================================================
+# SERVER CONFIGURATION
+# =============================================================================
+server:
+  # Basic server settings
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  worker_class: "uvicorn.workers.UvicornWorker"
+  worker_connections: 1000
+  max_requests: 1000
+  max_requests_jitter: 50
+  timeout: 300
+  keepalive: 2
+  
+  # SSL/TLS Configuration
+  ssl_enabled: false
+  ssl_cert_path: "/etc/ssl/certs/server.crt"
+  ssl_key_path: "/etc/ssl/private/server.key"
+  ssl_protocols: ["TLSv1.2", "TLSv1.3"]
+  
+  # Server optimization
+  preload_app: true
+  max_worker_memory: "8GB"
+  graceful_timeout: 30
+  worker_tmp_dir: "/dev/shm"
+
+# =============================================================================
+# API CONFIGURATION
+# =============================================================================
+api:
+  # API versioning
+  version: "v1"
+  title: "Ragamala Painting Generator API"
+  description: "SDXL 1.0 fine-tuned model for generating Ragamala paintings"
+  
+  # Request/Response settings
+  max_request_size: "50MB"
+  max_response_size: "100MB"
+  request_timeout: 300
+  
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
+    requests_per_hour: 1000
+    requests_per_day: 10000
+    burst_size: 20
+    
+  # CORS configuration
+  cors:
+    allow_origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+      - "https://ragamala-app.com"
+    allow_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers: ["*"]
+    allow_credentials: true
+    max_age: 3600
+
+# =============================================================================
+# AUTHENTICATION AND SECURITY
+# =============================================================================
+security:
+  # Authentication
+  enable_auth: false
+  auth_type: "bearer"
+  secret_key: "your-super-secret-key-change-in-production"
+  algorithm: "HS256"
+  access_token_expire_minutes: 30
+  
+  # API Keys
+  api_keys:
+    enabled: false
+    header_name: "X-API-Key"
+    valid_keys: []
+  
+  # Request validation
+  validate_requests: true
+  sanitize_inputs: true
+  max_prompt_length: 1000
+  
+  # Security headers
+  security_headers:
+    x_content_type_options: "nosniff"
+    x_frame_options: "DENY"
+    x_xss_protection: "1; mode=block"
+    strict_transport_security: "max-age=31536000; includeSubDomains"
+
+# =============================================================================
+# MODEL CONFIGURATION
+# =============================================================================
+model:
+  # Model paths
+  base_model_path: "stabilityai/stable-diffusion-xl-base-1.0"
+  lora_weights_path: "models/lora_weights/ragamala_lora.safetensors"
+  vae_model_path: "madebyollin/sdxl-vae-fp16-fix"
+  
+  # Model loading
+  torch_dtype: "float16"
+  device: "cuda"
+  device_map: "auto"
+  low_cpu_mem_usage: true
+  
+  # Model optimization
+  enable_xformers: true
+  enable_flash_attention: false
+  enable_cpu_offload: false
+  enable_model_cpu_offload: false
+  enable_attention_slicing: true
+  enable_vae_slicing: true
+  enable_vae_tiling: false
+  
+  # Compilation
+  compile_model: false
+  torch_compile_mode: "reduce-overhead"
+  
+  # Memory management
+  max_memory_usage: "16GB"
+  gradient_checkpointing: false
+
+# =============================================================================
+# INFERENCE CONFIGURATION
+# =============================================================================
+inference:
+  # Default generation parameters
+  default_params:
+    num_inference_steps: 30
+    guidance_scale: 7.5
+    negative_prompt: "blurry, low quality, distorted, modern, western art, cartoon, anime"
+    width: 1024
+    height: 1024
+    num_images_per_prompt: 1
+    eta: 0.0
+    generator_seed: null
+    
+  # Parameter limits
+  limits:
+    max_inference_steps: 100
+    min_inference_steps: 10
+    max_guidance_scale: 20.0
+    min_guidance_scale: 1.0
+    max_width: 2048
+    max_height: 2048
+    min_width: 512
+    min_height: 512
+    max_images_per_prompt: 4
+    max_batch_size: 4
+  
+  # Scheduler configuration
+  scheduler:
+    type: "DPMSolverMultistepScheduler"
+    algorithm_type: "dpmsolver++"
+    solver_type: "midpoint"
+    use_karras_sigmas: false
+    
+  # Cultural conditioning
+  cultural_conditioning:
+    enable_raga_conditioning: true
+    enable_style_conditioning: true
+    raga_conditioning_scale: 1.0
+    style_conditioning_scale: 0.8
+
+# =============================================================================
+# CACHING CONFIGURATION
+# =============================================================================
+caching:
+  # Redis configuration
+  redis:
+    enabled: true
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+    max_connections: 100
+    socket_timeout: 5
+    socket_connect_timeout: 5
+    
+  # Cache settings
+  cache_prompts: true
+  cache_embeddings: true
+  cache_generated_images: false
+  cache_ttl: 3600
+  max_cache_size: "2GB"
+  
+  # Model caching
+  model_cache_dir: "/tmp/model_cache"
+  huggingface_cache_dir: "/tmp/huggingface_cache"
+  transformers_cache_dir: "/tmp/transformers_cache"
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+logging:
+  # Log levels
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log files
+  log_file: "logs/api/ragamala_api.log"
+  max_file_size: "100MB"
+  backup_count: 5
+  rotation: "daily"
+  
+  # Structured logging
+  structured_logging: true
+  log_requests: true
+  log_responses: false
+  log_errors: true
+  
+  # External logging
+  syslog:
+    enabled: false
+    host: "localhost"
+    port: 514
+    facility: "local0"
+
+# =============================================================================
+# MONITORING CONFIGURATION
+# =============================================================================
+monitoring:
+  # Health checks
+  health_check:
+    enabled: true
+    endpoint: "/health"
+    interval: 30
+    timeout: 10
+    
+  # Metrics
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+    port: 9090
+    
+  # Prometheus integration
+  prometheus:
+    enabled: true
+    metrics_path: "/metrics"
+    registry: "default"
+    
+  # Performance monitoring
+  performance:
+    track_inference_time: true
+    track_memory_usage: true
+    track_gpu_utilization: true
+    track_request_count: true
+    track_error_rate: true
+
+# =============================================================================
+# STORAGE CONFIGURATION
+# =============================================================================
+storage:
+  # Local storage
+  local:
+    temp_dir: "/tmp/ragamala_temp"
+    output_dir: "outputs/generated"
+    max_storage_size: "10GB"
+    cleanup_interval: 3600
+    
+  # S3 configuration
+  s3:
+    enabled: false
+    bucket: "ragamala-generated-images"
+    region: "us-east-1"
+    access_key_id: null
+    secret_access_key: null
+    prefix: "generated/"
+    
+  # Image storage
+  image_storage:
+    format: "PNG"
+    quality: 95
+    compression: "lossless"
+    metadata_embedding: true
+
+# =============================================================================
+# QUEUE CONFIGURATION
+# =============================================================================
+queue:
+  # Background job processing
+  enabled: false
+  backend: "redis"
+  
+  # Queue settings
+  max_queue_size: 1000
+  worker_processes: 2
+  job_timeout: 600
+  retry_attempts: 3
+  retry_delay: 60
+  
+  # Priority queues
+  priority_queues:
+    high: "ragamala_high_priority"
+    normal: "ragamala_normal"
+    low: "ragamala_low_priority"
+
+# =============================================================================
+# CULTURAL VALIDATION
+# =============================================================================
+cultural_validation:
+  # Enable cultural accuracy checking
+  enabled: true
+  
+  # Validation services
+  expert_validation:
+    enabled: false
+    api_url: "https://api.cultural-validation.com"
+    api_key: null
+    timeout: 30
+    
+  # Automated validation
+  automated_validation:
+    enabled: true
+    confidence_threshold: 0.7
+    raga_accuracy_weight: 0.4
+    style_accuracy_weight: 0.3
+    iconography_weight: 0.3
+    
+  # Validation models
+  validation_models:
+    raga_classifier: "models/validation/raga_classifier.pt"
+    style_classifier: "models/validation/style_classifier.pt"
+    iconography_detector: "models/validation/iconography_detector.pt"
+
+# =============================================================================
+# SCALING CONFIGURATION
+# =============================================================================
+scaling:
+  # Auto-scaling
+  auto_scaling:
+    enabled: false
+    min_workers: 2
+    max_workers: 10
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+    scale_up_cooldown: 300
+    scale_down_cooldown: 600
+    
+  # Load balancing
+  load_balancing:
+    strategy: "round_robin"
+    health_check_interval: 30
+    unhealthy_threshold: 3
+    healthy_threshold: 2
+    
+  # Resource limits
+  resource_limits:
+    cpu_limit: "4"
+    memory_limit: "16Gi"
+    gpu_limit: "1"
+
+# =============================================================================
+# BACKUP AND RECOVERY
+# =============================================================================
+backup:
+  # Model backup
+  model_backup:
+    enabled: true
+    schedule: "0 2 * * *"
+    retention_days: 30
+    backup_location: "s3://ragamala-backups/models/"
+    
+  # Configuration backup
+  config_backup:
+    enabled: true
+    schedule: "0 1 * * *"
+    retention_days: 90
+    backup_location: "s3://ragamala-backups/configs/"
+
+# =============================================================================
+# DEVELOPMENT CONFIGURATION
+# =============================================================================
+development:
+  # Debug settings
+  debug: false
+  reload: false
+  hot_reload: false
+  
+  # Development tools
+  enable_swagger: true
+  enable_redoc: true
+  enable_openapi: true
+  
+  # Testing
+  test_mode: false
+  mock_responses: false
+  
+  # Profiling
+  enable_profiling: false
+  profiler_output_dir: "logs/profiling"
+
+# =============================================================================
+# NOTIFICATION CONFIGURATION
+# =============================================================================
+notifications:
+  # Email notifications
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    smtp_user: null
+    smtp_password: null
+    from_address: "noreply@ragamala-ai.com"
+    
+  # Slack notifications
+  slack:
+    enabled: false
+    webhook_url: null
+    channel: "#ragamala-alerts"
+    
+  # Alert conditions
+  alerts:
+    high_error_rate: 5.0
+    high_response_time: 10.0
+    low_disk_space: 10.0
+    high_memory_usage: 90.0
+
+# =============================================================================
+# EXPERIMENTAL FEATURES
+# =============================================================================
+experimental:
+  # Advanced features
+  enable_controlnet: false
+  enable_ip_adapter: false
+  enable_multi_style_generation: false
+  
+  # Performance experiments
+  enable_torch_compile: false
+  enable_tensorrt: false
+  enable_onnx_runtime: false
+  
+  # Cultural experiments
+  enable_raga_music_synthesis: false
+  enable_interactive_generation: false
+  enable_style_transfer: false
+
+# =============================================================================
+# COMPLIANCE AND GOVERNANCE
+# =============================================================================
+compliance:
+  # Data governance
+  data_retention_days: 30
+  anonymize_logs: true
+  gdpr_compliance: true
+  
+  # Audit logging
+  audit_logging:
+    enabled: true
+    log_file: "logs/audit/ragamala_audit.log"
+    include_request_data: false
+    include_response_data: false
+    
+  # Content policy
+  content_policy:
+    enable_content_filtering: true
+    blocked_keywords: []
+    cultural_sensitivity_check: true

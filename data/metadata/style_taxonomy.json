@@ -1,0 +1,378 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "Comprehensive taxonomy of Indian classical painting styles for Ragamala painting generation",
+    "created_date": "2025-06-28",
+    "source": "historical and regional Indian painting schools",
+    "total_styles": 12,
+    "classification_system": "regional_and_temporal",
+    "period_coverage": "16th-19th_century"
+  },
+  "primary_styles": {
+    "rajput": {
+      "id": "style_001",
+      "name": "Rajput",
+      "description": "Bold and vibrant style from Rajasthan with royal themes, geometric patterns, and bright colors",
+      "origin": "rajasthan",
+      "period": "16th-19th_century",
+      "peak_period": "17th-18th_century",
+      "regions": ["mewar", "marwar", "hadoti", "dhundar"],
+      "characteristics": [
+        "bold_colors",
+        "geometric_patterns",
+        "royal_themes",
+        "detailed_portraits",
+        "flat_perspective",
+        "decorative_borders"
+      ],
+      "color_palette": {
+        "primary": ["red", "gold", "white", "green"],
+        "secondary": ["blue", "yellow", "orange", "purple"],
+        "accent": ["silver", "black", "pink"]
+      },
+      "notable_schools": [
+        "mewar",
+        "bundi",
+        "kota",
+        "bikaner",
+        "kishangarh",
+        "jodhpur",
+        "jaipur",
+        "amber"
+      ],
+      "iconography": [
+        "royal_courts",
+        "hunting_scenes",
+        "religious_themes",
+        "heroic_legends",
+        "palace_architecture"
+      ],
+      "technical_features": {
+        "brushwork": "precise_and_controlled",
+        "composition": "symmetrical_and_balanced",
+        "perspective": "flat_with_multiple_viewpoints",
+        "detail_level": "high",
+        "background_treatment": "decorative_patterns"
+      },
+      "cultural_context": {
+        "patronage": "rajput_rulers",
+        "themes": ["valor", "devotion", "royal_grandeur"],
+        "religious_influence": "hindu_traditions",
+        "literary_sources": ["ramayana", "mahabharata", "puranas"]
+      }
+    },
+    "pahari": {
+      "id": "style_002",
+      "name": "Pahari",
+      "description": "Delicate and lyrical style from the Himalayan foothills with natural settings and romantic themes",
+      "origin": "himalayan_foothills",
+      "period": "17th-19th_century",
+      "peak_period": "18th_century",
+      "regions": ["jammu", "kangra", "basohli", "guler", "chamba"],
+      "characteristics": [
+        "soft_colors",
+        "natural_settings",
+        "romantic_themes",
+        "detailed_flora_fauna",
+        "lyrical_quality",
+        "emotional_expression"
+      ],
+      "color_palette": {
+        "primary": ["soft_blue", "green", "pink", "white"],
+        "secondary": ["yellow", "orange", "purple", "grey"],
+        "accent": ["gold", "silver", "crimson"]
+      },
+      "notable_schools": [
+        "kangra",
+        "basohli",
+        "guler",
+        "chamba",
+        "nurpur",
+        "mandi",
+        "kullu",
+        "arki"
+      ],
+      "iconography": [
+        "krishna_leela",
+        "romantic_couples",
+        "natural_landscapes",
+        "seasonal_festivals",
+        "devotional_scenes"
+      ],
+      "technical_features": {
+        "brushwork": "delicate_and_refined",
+        "composition": "naturalistic_and_flowing",
+        "perspective": "atmospheric_depth",
+        "detail_level": "intricate",
+        "background_treatment": "landscape_integration"
+      },
+      "cultural_context": {
+        "patronage": "hill_rajas",
+        "themes": ["divine_love", "nature_worship", "seasonal_beauty"],
+        "religious_influence": "vaishnavism",
+        "literary_sources": ["gita_govinda", "rasamanjari", "bihari_satsai"]
+      }
+    },
+    "deccan": {
+      "id": "style_003",
+      "name": "Deccan",
+      "description": "Persian influenced style from the Deccan region with formal compositions and architectural elements",
+      "origin": "deccan_plateau",
+      "period": "16th-18th_century",
+      "peak_period": "17th_century",
+      "regions": ["ahmednagar", "bijapur", "golconda", "hyderabad"],
+      "characteristics": [
+        "persian_influence",
+        "architectural_elements",
+        "formal_compositions",
+        "vibrant_colors",
+        "geometric_precision",
+        "courtly_elegance"
+      ],
+      "color_palette": {
+        "primary": ["deep_blue", "purple", "gold", "white"],
+        "secondary": ["red", "green", "orange", "black"],
+        "accent": ["silver", "turquoise", "crimson"]
+      },
+      "notable_schools": [
+        "bijapur",
+        "golconda",
+        "hyderabad",
+        "ahmednagar"
+      ],
+      "iconography": [
+        "court_scenes",
+        "architectural_settings",
+        "persian_motifs",
+        "calligraphy",
+        "geometric_patterns"
+      ],
+      "technical_features": {
+        "brushwork": "precise_and_controlled",
+        "composition": "formal_and_structured",
+        "perspective": "architectural_accuracy",
+        "detail_level": "elaborate",
+        "background_treatment": "architectural_integration"
+      },
+      "cultural_context": {
+        "patronage": "deccan_sultans",
+        "themes": ["courtly_life", "architectural_grandeur", "persian_culture"],
+        "religious_influence": "islamic_traditions",
+        "literary_sources": ["persian_poetry", "sufi_literature"]
+      }
+    },
+    "mughal": {
+      "id": "style_004",
+      "name": "Mughal",
+      "description": "Refined and detailed courtly style with Persian influence, depicting royal scenes and intricate details",
+      "origin": "northern_india",
+      "period": "16th-18th_century",
+      "peak_period": "17th_century",
+      "regions": ["delhi", "agra", "fatehpur_sikri", "lahore"],
+      "characteristics": [
+        "court_scenes",
+        "elaborate_details",
+        "imperial_themes",
+        "naturalism",
+        "portraiture_excellence",
+        "manuscript_illumination"
+      ],
+      "color_palette": {
+        "primary": ["rich_colors", "gold", "jewel_tones", "intricate_patterns"],
+        "secondary": ["deep_red", "blue", "green", "purple"],
+        "accent": ["gold_leaf", "silver", "precious_pigments"]
+      },
+      "notable_schools": [
+        "imperial_mughal",
+        "provincial_mughal",
+        "sub_imperial"
+      ],
+      "iconography": [
+        "emperor_portraits",
+        "court_ceremonies",
+        "hunting_scenes",
+        "architectural_monuments",
+        "natural_history"
+      ],
+      "technical_features": {
+        "brushwork": "highly_refined",
+        "composition": "balanced_and_hierarchical",
+        "perspective": "european_influenced",
+        "detail_level": "extraordinary",
+        "background_treatment": "realistic_landscapes"
+      },
+      "cultural_context": {
+        "patronage": "mughal_emperors",
+        "themes": ["imperial_power", "cultural_synthesis", "artistic_excellence"],
+        "religious_influence": "islamic_persian_traditions",
+        "literary_sources": ["persian_classics", "akbarnama", "baburnama"]
+      }
+    }
+  },
+  "sub_styles": {
+    "mewar": {
+      "id": "substyle_001",
+      "parent_style": "rajput",
+      "name": "Mewar",
+      "description": "Bold and heroic style from Mewar region with emphasis on valor and devotion",
+      "characteristics": ["bold_outlines", "bright_colors", "heroic_themes"],
+      "color_palette": ["red", "yellow", "white", "green"],
+      "notable_artists": ["sahibdin", "manohar"],
+      "period": "17th-18th_century"
+    },
+    "bundi": {
+      "id": "substyle_002",
+      "parent_style": "rajput",
+      "name": "Bundi",
+      "description": "School known for unblemished color sense and excellent formal design, with lush vegetation and picturesque landscapes",
+      "characteristics": ["vivid_colors", "lush_vegetation", "landscapes", "equestrian_portraits"],
+      "color_palette": ["bright_colors", "reds", "yellows", "greens"],
+      "period": "17th-18th_century"
+    },
+    "kota": {
+      "id": "substyle_003",
+      "parent_style": "rajput",
+      "name": "Kota",
+      "description": "Known for depiction of hunting scenes and animal chase with spontaneous and calligraphic execution",
+      "characteristics": ["hunting_scenes", "animal_chase", "calligraphic_execution", "marked_shading"],
+      "color_palette": ["earth_tones", "greens", "browns", "ochre"],
+      "period": "17th-18th_century"
+    },
+    "kishangarh": {
+      "id": "substyle_004",
+      "parent_style": "rajput",
+      "name": "Kishangarh",
+      "description": "Highly stylized with distinct facial types and panoramic landscapes, known for sophistication",
+      "characteristics": ["stylized_figures", "arched_eyebrows", "lotus_shaped_eyes", "panoramic_landscapes"],
+      "color_palette": ["soft_pastels", "greens", "pinks", "blues"],
+      "period": "18th_century"
+    },
+    "kangra": {
+      "id": "substyle_005",
+      "parent_style": "pahari",
+      "name": "Kangra",
+      "description": "Refined and lyrical style with emphasis on natural beauty and romantic themes",
+      "characteristics": ["delicate_features", "natural_settings", "romantic_themes", "soft_modeling"],
+      "color_palette": ["soft_colors", "pastels", "natural_tones"],
+      "period": "18th-19th_century"
+    },
+    "basohli": {
+      "id": "substyle_006",
+      "parent_style": "pahari",
+      "name": "Basohli",
+      "description": "Bold and vigorous style with intense colors and dramatic expressions",
+      "characteristics": ["bold_colors", "intense_expressions", "geometric_patterns", "beetle_wing_decoration"],
+      "color_palette": ["intense_reds", "yellows", "blues", "greens"],
+      "period": "17th-18th_century"
+    },
+    "guler": {
+      "id": "substyle_007",
+      "parent_style": "pahari",
+      "name": "Guler",
+      "description": "Transitional style between Basohli and Kangra with naturalistic tendencies",
+      "characteristics": ["naturalistic_approach", "refined_technique", "balanced_composition"],
+      "color_palette": ["harmonious_colors", "natural_tones"],
+      "period": "18th_century"
+    },
+    "chamba": {
+      "id": "substyle_008",
+      "parent_style": "pahari",
+      "name": "Chamba",
+      "description": "Distinctive style with unique iconography and local cultural elements",
+      "characteristics": ["local_traditions", "unique_iconography", "regional_variations"],
+      "color_palette": ["regional_preferences", "local_pigments"],
+      "period": "17th-19th_century"
+    }
+  },
+  "temporal_evolution": {
+    "16th_century": {
+      "dominant_styles": ["early_rajput", "early_deccan", "early_mughal"],
+      "characteristics": ["persian_influence", "manuscript_tradition", "court_patronage"],
+      "innovations": ["adaptation_of_persian_techniques", "local_color_preferences"]
+    },
+    "17th_century": {
+      "dominant_styles": ["mature_mughal", "developed_rajput", "peak_deccan"],
+      "characteristics": ["technical_refinement", "stylistic_maturity", "regional_variations"],
+      "innovations": ["naturalistic_portraiture", "landscape_development", "color_sophistication"]
+    },
+    "18th_century": {
+      "dominant_styles": ["pahari_flowering", "rajput_diversification", "late_mughal"],
+      "characteristics": ["regional_schools", "romantic_themes", "technical_excellence"],
+      "innovations": ["emotional_expression", "atmospheric_effects", "narrative_sophistication"]
+    },
+    "19th_century": {
+      "dominant_styles": ["late_pahari", "company_school", "folk_traditions"],
+      "characteristics": ["european_influence", "photography_impact", "traditional_revival"],
+      "innovations": ["hybrid_techniques", "new_subject_matter", "commercial_production"]
+    }
+  },
+  "ragamala_specific_features": {
+    "visual_music_correlation": {
+      "color_raga_mapping": {
+        "bhairav": ["white", "saffron", "gold"],
+        "malkauns": ["deep_blue", "purple", "black"],
+        "yaman": ["blue", "white", "pink"],
+        "darbari": ["purple", "gold", "red"],
+        "bhimpalasi": ["yellow", "green", "white"],
+        "marwa": ["orange", "purple", "gold"]
+      },
+      "mood_representation": {
+        "devotional": ["temple_settings", "prayer_poses", "divine_symbols"],
+        "romantic": ["garden_settings", "lovers", "moonlight"],
+        "heroic": ["court_scenes", "warriors", "ceremonial"],
+        "peaceful": ["natural_settings", "rest_poses", "harmony"],
+        "melancholic": ["solitary_figures", "dark_colors", "contemplation"]
+      },
+      "time_visualization": {
+        "dawn": ["sunrise_colors", "temple_courtyards", "morning_activities"],
+        "day": ["bright_colors", "active_scenes", "full_illumination"],
+        "evening": ["sunset_hues", "romantic_settings", "soft_lighting"],
+        "night": ["dark_backgrounds", "moonlight", "intimate_scenes"]
+      }
+    },
+    "iconographic_conventions": {
+      "seasonal_elements": {
+        "spring": ["flowering_trees", "birds", "fresh_foliage"],
+        "summer": ["intense_sun", "shade_seeking", "cooling_elements"],
+        "monsoon": ["dark_clouds", "rain", "peacocks", "lush_greenery"],
+        "autumn": ["golden_colors", "harvest_imagery", "mature_landscapes"],
+        "winter": ["bare_trees", "warm_clothing", "fire_elements"]
+      },
+      "architectural_elements": {
+        "rajput": ["geometric_patterns", "jharokhas", "chhatris"],
+        "pahari": ["natural_integration", "terraced_gardens", "mountain_architecture"],
+        "deccan": ["persian_arches", "geometric_precision", "formal_gardens"],
+        "mughal": ["monumental_scale", "pietra_dura", "symmetrical_layouts"]
+      }
+    }
+  },
+  "technical_specifications": {
+    "color_preparation": {
+      "traditional_pigments": ["lapis_lazuli", "vermillion", "gold_leaf", "silver", "indigo"],
+      "binding_agents": ["gum_arabic", "honey", "egg_white"],
+      "surface_preparation": ["paper", "cloth", "priming_techniques"]
+    },
+    "compositional_principles": {
+      "space_organization": ["hierarchical_scaling", "multiple_viewpoints", "decorative_integration"],
+      "figure_treatment": ["stylized_proportions", "expressive_gestures", "costume_details"],
+      "narrative_techniques": ["sequential_storytelling", "symbolic_representation", "emotional_communication"]
+    }
+  },
+  "cultural_significance": {
+    "artistic_synthesis": {
+      "music_visual_art": "integration of auditory and visual aesthetics",
+      "poetry_painting": "literary themes translated to visual narratives",
+      "religious_secular": "spiritual themes in courtly contexts"
+    },
+    "regional_identity": {
+      "local_traditions": "preservation of regional cultural characteristics",
+      "court_culture": "reflection of royal patronage and taste",
+      "folk_elements": "integration of popular cultural motifs"
+    },
+    "historical_documentation": {
+      "period_aesthetics": "visual record of historical artistic preferences",
+      "social_customs": "depiction of contemporary social practices",
+      "religious_practices": "illustration of devotional and ritual activities"
+    }
+  }
+}

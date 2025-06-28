@@ -1,0 +1,605 @@
+# =============================================================================
+# RAGAMALA PAINTING GENERATOR - GIT IGNORE FILE
+# =============================================================================
+# Comprehensive .gitignore for SDXL 1.0 fine-tuning on Ragamala paintings
+# Optimized for EC2 deployment and ML workflows
+
+# =============================================================================
+# PYTHON SPECIFIC
+# =============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff
+instance/
+.webassets-cache
+
+# Scrapy stuff
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# =============================================================================
+# MACHINE LEARNING SPECIFIC
+# =============================================================================
+# Model files and checkpoints
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.bin
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+
+# Model directories
+models/checkpoints/
+models/lora_weights/
+models/final_model/
+models/pretrained/
+models/cache/
+
+# Training outputs
+outputs/training_samples/
+outputs/evaluation_results/
+outputs/production_outputs/
+outputs/generated_images/
+outputs/temp/
+
+# Weights & Biases
+wandb/
+.wandb/
+
+# MLflow
+mlruns/
+.mlflow/
+
+# TensorBoard logs
+logs/tensorboard/
+runs/
+
+# Experiment tracking
+experiments/
+.neptune/
+
+# =============================================================================
+# HUGGING FACE SPECIFIC
+# =============================================================================
+# Hugging Face cache directories
+.cache/huggingface/
+.cache/transformers/
+.cache/diffusers/
+transformers_cache/
+diffusers_cache/
+huggingface_hub/
+
+# Model downloads
+downloaded_models/
+pretrained_models/
+
+# =============================================================================
+# DATA SPECIFIC
+# =============================================================================
+# Raw data (too large for git)
+data/raw/
+data/processed/large_datasets/
+data/cache/
+
+# Temporary data files
+data/temp/
+data/tmp/
+*.tmp
+*.temp
+
+# Large image datasets
+*.zip
+*.tar.gz
+*.tar.bz2
+*.7z
+*.rar
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# CSV files (if large)
+data/*.csv
+data/**/*.csv
+
+# =============================================================================
+# CONFIGURATION AND SECRETS
+# =============================================================================
+# Environment variables
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
+
+# Configuration files with secrets
+config/secrets.yaml
+config/production.yaml
+config/local.yaml
+*.secret
+*.key
+*.pem
+*.crt
+
+# AWS credentials
+.aws/
+aws-credentials.json
+
+# API keys
+api_keys.json
+credentials.json
+
+# =============================================================================
+# CLOUD AND DEPLOYMENT
+# =============================================================================
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+terraform.tfvars.json
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Kubernetes
+*.kubeconfig
+kube-config
+
+# AWS
+.aws/
+aws-exports.js
+
+# Google Cloud
+gcloud/
+.gcloud/
+service-account-key.json
+
+# Azure
+.azure/
+
+# =============================================================================
+# IDE AND EDITOR SPECIFIC
+# =============================================================================
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Atom
+.atom/
+
+# JetBrains IDEs
+.idea/
+*.iml
+out/
+
+# =============================================================================
+# OPERATING SYSTEM SPECIFIC
+# =============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# LOGS AND TEMPORARY FILES
+# =============================================================================
+# Log files
+*.log
+logs/
+log/
+*.out
+*.err
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Cache directories
+.cache/
+cache/
+__pycache__/
+
+# =============================================================================
+# WEB AND API SPECIFIC
+# =============================================================================
+# Node.js (if using for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Frontend build outputs
+frontend/dist/
+frontend/build/
+static/
+
+# API documentation
+api/docs/build/
+
+# =============================================================================
+# JUPYTER AND NOTEBOOKS
+# =============================================================================
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Jupyter Lab
+.jupyter/
+.local/share/jupyter/
+
+# =============================================================================
+# MONITORING AND METRICS
+# =============================================================================
+# Prometheus
+prometheus_data/
+
+# Grafana
+grafana_data/
+
+# Application metrics
+metrics/
+monitoring/data/
+
+# =============================================================================
+# BACKUP AND ARCHIVE
+# =============================================================================
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*~
+
+# Archive files
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.zip
+*.7z
+*.rar
+
+# =============================================================================
+# CULTURAL DATA SPECIFIC
+# =============================================================================
+# Large cultural datasets
+data/cultural_datasets/
+data/museum_collections/
+data/raga_audio_files/
+
+# Copyrighted material (ensure proper licensing)
+data/copyrighted/
+data/restricted/
+
+# =============================================================================
+# TESTING AND COVERAGE
+# =============================================================================
+# Test outputs
+test_outputs/
+test_results/
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Performance testing
+benchmark_results/
+profiling_results/
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+# Generated documentation
+docs/_build/
+docs/build/
+site/
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+*.toc
+
+# =============================================================================
+# MISCELLANEOUS
+# =============================================================================
+# Thumbnails
+*.thumb
+
+# Image metadata
+*.exif
+
+# Video files (if any)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Audio files (if any)
+*.wav
+*.mp3
+*.flac
+
+# Large binary files
+*.bin
+*.dat
+
+# Compressed files
+*.gz
+*.bz2
+*.xz
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor backup files
+*~
+*.swp
+*.swo
+
+# Package files
+*.deb
+*.rpm
+*.pkg
+*.dmg
+
+# =============================================================================
+# PROJECT SPECIFIC IGNORES
+# =============================================================================
+# SDXL specific cache
+sdxl_cache/
+diffusion_cache/
+
+# Generated art samples
+samples/
+generated/
+preview_images/
+
+# Cultural validation cache
+cultural_validation_cache/
+
+# Raga classification models
+raga_models/
+
+# Style transfer models
+style_models/
+
+# Evaluation datasets
+evaluation_data/
+
+# User uploads
+uploads/
+user_data/
+
+# =============================================================================
+# PERFORMANCE AND PROFILING
+# =============================================================================
+# Profiling results
+*.prof
+*.profile
+profiling/
+
+# Memory dumps
+*.dump
+*.hprof
+
+# Performance logs
+perf.data*
+
+# =============================================================================
+# SECURITY
+# =============================================================================
+# SSL certificates
+*.crt
+*.key
+*.pem
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ppk
+
+# GPG keys
+*.gpg
+*.asc
+
+# =============================================================================
+# END OF .GITIGNORE
+# =============================================================================

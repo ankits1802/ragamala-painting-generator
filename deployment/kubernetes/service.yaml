@@ -1,0 +1,834 @@
+# Kubernetes Services configuration for Ragamala Painting Generator
+# This file defines all service configurations for the application components
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-api-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-api
+    component: inference
+    tier: backend
+    version: v1
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/health"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "30"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: ragamala-api
+  ports:
+    - name: http-api
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30800
+    - name: http-metrics
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  type: LoadBalancer
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+  loadBalancerSourceRanges:
+    - 0.0.0.0/0
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-api-internal
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-api
+    component: inference
+    tier: backend
+    scope: internal
+spec:
+  selector:
+    app: ragamala-api
+  ports:
+    - name: http-api
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+    - name: grpc-api
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+  type: ClusterIP
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-training-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-training
+    component: training
+    tier: compute
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+spec:
+  selector:
+    app: ragamala-training
+  ports:
+    - name: jupyter-notebook
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+    - name: tensorboard
+      protocol: TCP
+      port: 6006
+      targetPort: 6006
+    - name: mlflow-tracking
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+    - name: ssh
+      protocol: TCP
+      port: 22
+      targetPort: 22
+    - name: training-api
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-frontend-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-frontend
+    component: frontend
+    tier: presentation
+spec:
+  selector:
+    app: ragamala-frontend
+  ports:
+    - name: gradio-interface
+      protocol: TCP
+      port: 7860
+      targetPort: 7860
+    - name: streamlit-dashboard
+      protocol: TCP
+      port: 8501
+      targetPort: 8501
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: redis
+    component: cache
+    tier: data
+spec:
+  selector:
+    app: redis
+  ports:
+    - name: redis-port
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: redis-sentinel
+    component: cache-monitor
+    tier: data
+spec:
+  selector:
+    app: redis-sentinel
+  ports:
+    - name: sentinel-port
+      protocol: TCP
+      port: 26379
+      targetPort: 26379
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: postgres
+    component: database
+    tier: data
+spec:
+  selector:
+    app: postgres
+  ports:
+    - name: postgres-port
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-replica-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: postgres-replica
+    component: database-replica
+    tier: data
+spec:
+  selector:
+    app: postgres-replica
+  ports:
+    - name: postgres-port
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: minio
+    component: object-storage
+    tier: data
+spec:
+  selector:
+    app: minio
+  ports:
+    - name: minio-api
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+    - name: minio-console
+      protocol: TCP
+      port: 9001
+      targetPort: 9001
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: elasticsearch
+    component: search-engine
+    tier: data
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - name: elasticsearch-rest
+      protocol: TCP
+      port: 9200
+      targetPort: 9200
+    - name: elasticsearch-transport
+      protocol: TCP
+      port: 9300
+      targetPort: 9300
+  type: ClusterIP
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: kibana
+    component: log-visualization
+    tier: monitoring
+spec:
+  selector:
+    app: kibana
+  ports:
+    - name: kibana-ui
+      protocol: TCP
+      port: 5601
+      targetPort: 5601
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: prometheus
+    component: metrics-collection
+    tier: monitoring
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - name: prometheus-web
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: grafana
+    component: metrics-visualization
+    tier: monitoring
+spec:
+  selector:
+    app: grafana
+  ports:
+    - name: grafana-web
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: jaeger
+    component: distributed-tracing
+    tier: monitoring
+spec:
+  selector:
+    app: jaeger
+  ports:
+    - name: jaeger-query
+      protocol: TCP
+      port: 16686
+      targetPort: 16686
+    - name: jaeger-collector
+      protocol: TCP
+      port: 14268
+      targetPort: 14268
+    - name: jaeger-agent
+      protocol: UDP
+      port: 6831
+      targetPort: 6831
+    - name: jaeger-agent-compact
+      protocol: UDP
+      port: 6832
+      targetPort: 6832
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress-controller
+  namespace: ragamala-painting-generator
+  labels:
+    app: nginx-ingress
+    component: ingress-controller
+    tier: networking
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-west-2:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+spec:
+  selector:
+    app: nginx-ingress
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-registry-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: model-registry
+    component: model-management
+    tier: ml-ops
+spec:
+  selector:
+    app: model-registry
+  ports:
+    - name: registry-api
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: registry-ui
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workflow-engine-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: workflow-engine
+    component: pipeline-orchestration
+    tier: ml-ops
+spec:
+  selector:
+    app: workflow-engine
+  ports:
+    - name: workflow-api
+      protocol: TCP
+      port: 8082
+      targetPort: 8082
+    - name: workflow-ui
+      protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-validation-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: data-validation
+    component: data-quality
+    tier: ml-ops
+spec:
+  selector:
+    app: data-validation
+  ports:
+    - name: validation-api
+      protocol: TCP
+      port: 8084
+      targetPort: 8084
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: feature-store-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: feature-store
+    component: feature-management
+    tier: ml-ops
+spec:
+  selector:
+    app: feature-store
+  ports:
+    - name: feature-api
+      protocol: TCP
+      port: 8085
+      targetPort: 8085
+    - name: feature-ui
+      protocol: TCP
+      port: 8086
+      targetPort: 8086
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-serving-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: model-serving
+    component: inference-serving
+    tier: ml-ops
+spec:
+  selector:
+    app: model-serving
+  ports:
+    - name: serving-grpc
+      protocol: TCP
+      port: 8500
+      targetPort: 8500
+    - name: serving-rest
+      protocol: TCP
+      port: 8501
+      targetPort: 8501
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: batch-inference-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: batch-inference
+    component: batch-processing
+    tier: ml-ops
+spec:
+  selector:
+    app: batch-inference
+  ports:
+    - name: batch-api
+      protocol: TCP
+      port: 8087
+      targetPort: 8087
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-monitoring-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: model-monitoring
+    component: ml-monitoring
+    tier: ml-ops
+spec:
+  selector:
+    app: model-monitoring
+  ports:
+    - name: monitoring-api
+      protocol: TCP
+      port: 8088
+      targetPort: 8088
+    - name: monitoring-ui
+      protocol: TCP
+      port: 8089
+      targetPort: 8089
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: artifact-store-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: artifact-store
+    component: artifact-management
+    tier: ml-ops
+spec:
+  selector:
+    app: artifact-store
+  ports:
+    - name: artifact-api
+      protocol: TCP
+      port: 8090
+      targetPort: 8090
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: experiment-tracking-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: experiment-tracking
+    component: experiment-management
+    tier: ml-ops
+spec:
+  selector:
+    app: experiment-tracking
+  ports:
+    - name: tracking-api
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+    - name: tracking-ui
+      protocol: TCP
+      port: 5001
+      targetPort: 5001
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-pipeline-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: data-pipeline
+    component: data-processing
+    tier: data-ops
+spec:
+  selector:
+    app: data-pipeline
+  ports:
+    - name: pipeline-api
+      protocol: TCP
+      port: 8091
+      targetPort: 8091
+    - name: pipeline-ui
+      protocol: TCP
+      port: 8092
+      targetPort: 8092
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: notification-service
+    component: alerting
+    tier: monitoring
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - name: notification-api
+      protocol: TCP
+      port: 8093
+      targetPort: 8093
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backup-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: backup-service
+    component: data-backup
+    tier: data-ops
+spec:
+  selector:
+    app: backup-service
+  ports:
+    - name: backup-api
+      protocol: TCP
+      port: 8094
+      targetPort: 8094
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: security-scanner-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: security-scanner
+    component: security-scanning
+    tier: security
+spec:
+  selector:
+    app: security-scanner
+  ports:
+    - name: scanner-api
+      protocol: TCP
+      port: 8095
+      targetPort: 8095
+  type: ClusterIP
+
+---
+# Headless service for StatefulSet components
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-training-headless
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-training
+    component: training
+    tier: compute
+spec:
+  selector:
+    app: ragamala-training
+  ports:
+    - name: training-coordination
+      protocol: TCP
+      port: 29500
+      targetPort: 29500
+  clusterIP: None
+  type: ClusterIP
+
+---
+# External service for cloud storage
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3-external-service
+  namespace: ragamala-painting-generator
+  labels:
+    component: external-storage
+    tier: data
+spec:
+  type: ExternalName
+  externalName: s3.us-west-2.amazonaws.com
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+
+---
+# External service for container registry
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecr-external-service
+  namespace: ragamala-painting-generator
+  labels:
+    component: external-registry
+    tier: infrastructure
+spec:
+  type: ExternalName
+  externalName: 123456789012.dkr.ecr.us-west-2.amazonaws.com
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+
+---
+# Service for GPU metrics collection
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpu-metrics-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: gpu-metrics
+    component: gpu-monitoring
+    tier: monitoring
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9400"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: gpu-metrics
+  ports:
+    - name: gpu-metrics
+      protocol: TCP
+      port: 9400
+      targetPort: 9400
+  type: ClusterIP
+
+---
+# Service for distributed training coordination
+apiVersion: v1
+kind: Service
+metadata:
+  name: training-coordinator-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: training-coordinator
+    component: distributed-training
+    tier: ml-ops
+spec:
+  selector:
+    app: training-coordinator
+  ports:
+    - name: coordinator-api
+      protocol: TCP
+      port: 8096
+      targetPort: 8096
+    - name: coordinator-grpc
+      protocol: TCP
+      port: 9096
+      targetPort: 9096
+  type: ClusterIP
+
+---
+# Service for model versioning
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-versioning-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: model-versioning
+    component: version-control
+    tier: ml-ops
+spec:
+  selector:
+    app: model-versioning
+  ports:
+    - name: versioning-api
+      protocol: TCP
+      port: 8097
+      targetPort: 8097
+    - name: versioning-ui
+      protocol: TCP
+      port: 8098
+      targetPort: 8098
+  type: ClusterIP
+
+---
+# Service for A/B testing framework
+apiVersion: v1
+kind: Service
+metadata:
+  name: ab-testing-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: ab-testing
+    component: experimentation
+    tier: ml-ops
+spec:
+  selector:
+    app: ab-testing
+  ports:
+    - name: testing-api
+      protocol: TCP
+      port: 8099
+      targetPort: 8099
+    - name: testing-ui
+      protocol: TCP
+      port: 8100
+      targetPort: 8100
+  type: ClusterIP

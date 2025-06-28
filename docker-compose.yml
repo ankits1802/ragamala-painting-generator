@@ -1,0 +1,453 @@
+version: '3.8'
+
+# =============================================================================
+# RAGAMALA PAINTING GENERATOR - DOCKER COMPOSE CONFIGURATION
+# =============================================================================
+# Multi-service orchestration for SDXL 1.0 fine-tuning on Ragamala paintings
+# Optimized for EC2 deployment with GPU support
+
+services:
+  # =============================================================================
+  # MAIN APPLICATION SERVICE - SDXL TRAINING & INFERENCE
+  # =============================================================================
+  ragamala-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PYTHON_VERSION=3.10
+        - CUDA_VERSION=11.8
+    image: ragamala-generator:latest
+    container_name: ragamala-main
+    restart: unless-stopped
+    
+    # GPU Configuration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+    
+    # Environment Variables
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+      - TOKENIZERS_PARALLELISM=false
+      - WANDB_PROJECT=ragamala-sdxl
+      - HUGGINGFACE_HUB_CACHE=/app/cache/huggingface
+      - TRANSFORMERS_CACHE=/app/cache/transformers
+      - HF_HOME=/app/cache/hf_home
+      - PYTHONPATH=/app/src
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    
+    # Port Mappings
+    ports:
+      - "8000:8000"    # FastAPI server
+      - "7860:7860"    # Gradio interface
+      - "8501:8501"    # Streamlit dashboard
+      - "6006:6006"    # TensorBoard
+      - "8888:8888"    # Jupyter Lab
+    
+    # Volume Mounts
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - ./scripts:/app/scripts:ro
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+      - model-cache:/app/cache
+      - huggingface-cache:/app/cache/huggingface
+      - transformers-cache:/app/cache/transformers
+      - datasets-cache:/app/cache/datasets
+    
+    # Network Configuration
+    networks:
+      - ragamala-network
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Dependencies
+    depends_on:
+      - redis
+      - postgres
+      - monitoring
+    
+    # Resource Limits
+    mem_limit: 32g
+    memswap_limit: 32g
+    shm_size: 8g
+
+  # =============================================================================
+  # REDIS CACHE SERVICE
+  # =============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ragamala-redis
+    restart: unless-stopped
+    
+    # Configuration
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    
+    # Port Mapping
+    ports:
+      - "6379:6379"
+    
+    # Volume Mount
+    volumes:
+      - redis-data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    
+    # Resource Limits
+    mem_limit: 2g
+
+  # =============================================================================
+  # POSTGRESQL DATABASE SERVICE
+  # =============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: ragamala-postgres
+    restart: unless-stopped
+    
+    # Environment Variables
+    environment:
+      - POSTGRES_DB=ragamala_db
+      - POSTGRES_USER=ragamala_user
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-defaultpassword}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    
+    # Port Mapping
+    ports:
+      - "5432:5432"
+    
+    # Volume Mounts
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deployment/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ragamala_user -d ragamala_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # =============================================================================
+  # NGINX REVERSE PROXY
+  # =============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: ragamala-nginx
+    restart: unless-stopped
+    
+    # Port Mappings
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    # Volume Mounts
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/static:/var/www/static:ro
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    # Dependencies
+    depends_on:
+      - ragamala-app
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # MONITORING STACK
+  # =============================================================================
+  monitoring:
+    image: prom/prometheus:latest
+    container_name: ragamala-prometheus
+    restart: unless-stopped
+    
+    # Port Mapping
+    ports:
+      - "9090:9090"
+    
+    # Volume Mounts
+    volumes:
+      - ./deployment/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    
+    # Command
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    
+    # Network
+    networks:
+      - ragamala-network
+
+  # =============================================================================
+  # GRAFANA DASHBOARD
+  # =============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ragamala-grafana
+    restart: unless-stopped
+    
+    # Environment Variables
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    
+    # Port Mapping
+    ports:
+      - "3000:3000"
+    
+    # Volume Mounts
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./deployment/monitoring/grafana_dashboard.json:/etc/grafana/provisioning/dashboards/ragamala.json:ro
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    # Dependencies
+    depends_on:
+      - monitoring
+
+  # =============================================================================
+  # JUPYTER LAB SERVICE (DEVELOPMENT)
+  # =============================================================================
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.jupyter
+    container_name: ragamala-jupyter
+    restart: unless-stopped
+    
+    # Environment Variables
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-ragamala2025}
+    
+    # Port Mapping
+    ports:
+      - "8889:8888"
+    
+    # Volume Mounts
+    volumes:
+      - ./notebooks:/home/jovyan/work/notebooks
+      - ./src:/home/jovyan/work/src:ro
+      - ./data:/home/jovyan/work/data:ro
+      - ./outputs:/home/jovyan/work/outputs
+      - jupyter-data:/home/jovyan/.jupyter
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    # GPU Access
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+    
+    profiles:
+      - development
+
+  # =============================================================================
+  # MLFLOW TRACKING SERVER
+  # =============================================================================
+  mlflow:
+    image: python:3.10-slim
+    container_name: ragamala-mlflow
+    restart: unless-stopped
+    
+    # Command
+    command: >
+      bash -c "
+        pip install mlflow psycopg2-binary boto3 &&
+        mlflow server
+        --backend-store-uri postgresql://ragamala_user:${DATABASE_PASSWORD:-defaultpassword}@postgres:5432/ragamala_db
+        --default-artifact-root s3://${AWS_S3_BUCKET:-ragamala-artifacts}/mlflow
+        --host 0.0.0.0
+        --port 5000
+      "
+    
+    # Environment Variables
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+    
+    # Port Mapping
+    ports:
+      - "5000:5000"
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    # Dependencies
+    depends_on:
+      - postgres
+
+  # =============================================================================
+  # CULTURAL VALIDATION SERVICE
+  # =============================================================================
+  cultural-validator:
+    build:
+      context: ./src/evaluation
+      dockerfile: Dockerfile.cultural
+    container_name: ragamala-cultural-validator
+    restart: unless-stopped
+    
+    # Environment Variables
+    environment:
+      - CULTURAL_API_KEY=${CULTURAL_EXPERT_API_KEY}
+      - RAGA_TAXONOMY_PATH=/app/data/metadata/raga_taxonomy.json
+      - STYLE_TAXONOMY_PATH=/app/data/metadata/style_taxonomy.json
+    
+    # Port Mapping
+    ports:
+      - "8001:8000"
+    
+    # Volume Mounts
+    volumes:
+      - ./data/metadata:/app/data/metadata:ro
+      - ./src/evaluation:/app/src:ro
+    
+    # Network
+    networks:
+      - ragamala-network
+
+  # =============================================================================
+  # DATA PREPROCESSING SERVICE
+  # =============================================================================
+  data-processor:
+    build:
+      context: ./src/data
+      dockerfile: Dockerfile.processor
+    container_name: ragamala-data-processor
+    restart: "no"
+    
+    # Environment Variables
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+    
+    # Volume Mounts
+    volumes:
+      - ./data:/app/data
+      - ./src/data:/app/src:ro
+      - ./config:/app/config:ro
+    
+    # Network
+    networks:
+      - ragamala-network
+    
+    profiles:
+      - preprocessing
+
+# =============================================================================
+# NETWORKS CONFIGURATION
+# =============================================================================
+networks:
+  ragamala-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# VOLUMES CONFIGURATION
+# =============================================================================
+volumes:
+  # Application Data
+  model-cache:
+    driver: local
+  huggingface-cache:
+    driver: local
+  transformers-cache:
+    driver: local
+  datasets-cache:
+    driver: local
+  
+  # Database Storage
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  
+  # Monitoring Data
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  
+  # Development
+  jupyter-data:
+    driver: local
+
+# =============================================================================
+# EXTENSION FIELDS (FOR REUSABILITY)
+# =============================================================================
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-gpu-config: &gpu-config
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            capabilities: [gpu]
+            count: all
+
+x-common-env: &common-env
+  PYTHONPATH: /app/src
+  LOG_LEVEL: INFO
+  ENVIRONMENT: production

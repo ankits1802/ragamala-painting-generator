@@ -1,0 +1,442 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "Comprehensive taxonomy of Indian classical ragas for Ragamala painting generation",
+    "created_date": "2025-06-28",
+    "total_ragas": 72,
+    "classification_system": "traditional_ragamala",
+    "source": "classical_indian_musicology"
+  },
+  "primary_ragas": {
+    "bhairav": {
+      "id": "raga_001",
+      "name": "Bhairav",
+      "aliases": ["bhairava", "bhairavi"],
+      "category": "primary",
+      "thaat": "bhairav",
+      "notes": {
+        "aroha": ["Sa", "re", "Ga", "Ma", "Pa", "dha", "Ni", "Sa"],
+        "avaroha": ["Sa", "Ni", "dha", "Pa", "Ma", "Ga", "re", "Sa"],
+        "vadi": "dha",
+        "samvadi": "re"
+      },
+      "time_of_performance": {
+        "preferred_time": "dawn",
+        "time_range": "04:00-07:00",
+        "period": "early_morning"
+      },
+      "season": "winter",
+      "mood": "devotional",
+      "emotions": ["reverence", "spirituality", "solemnity"],
+      "deity": "shiva",
+      "iconography": ["temple", "ascetic", "peacocks", "dawn_sky"],
+      "color_palette": ["white", "saffron", "gold", "pale_blue"],
+      "visual_elements": {
+        "setting": "temple_courtyard",
+        "figures": ["devotee", "priest", "ascetic"],
+        "objects": ["lotus", "prayer_beads", "incense"],
+        "architecture": ["temple_spires", "pillars", "sacred_geometry"]
+      },
+      "regional_variations": {
+        "north_indian": "bhairav",
+        "south_indian": "mayamalavagowla",
+        "carnatic_equivalent": "mayamalavagowla"
+      }
+    },
+    "malkauns": {
+      "id": "raga_002",
+      "name": "Malkauns",
+      "aliases": ["malkaunsa", "malkaushika"],
+      "category": "primary",
+      "thaat": "bhairavi",
+      "notes": {
+        "aroha": ["Sa", "ga", "ma", "dha", "ni", "Sa"],
+        "avaroha": ["Sa", "ni", "dha", "ma", "ga", "Sa"],
+        "vadi": "ma",
+        "samvadi": "Sa"
+      },
+      "time_of_performance": {
+        "preferred_time": "midnight",
+        "time_range": "22:00-02:00",
+        "period": "late_night"
+      },
+      "season": "monsoon",
+      "mood": "meditative",
+      "emotions": ["contemplation", "introspection", "mystery"],
+      "deity": "shiva",
+      "iconography": ["river", "meditation", "stars", "solitude"],
+      "color_palette": ["deep_blue", "purple", "black", "silver"],
+      "visual_elements": {
+        "setting": "riverside",
+        "figures": ["ascetic", "sage", "hermit"],
+        "objects": ["water", "stars", "meditation_mat"],
+        "architecture": ["cave", "hermitage", "natural_formations"]
+      },
+      "regional_variations": {
+        "north_indian": "malkauns",
+        "south_indian": "hindolam",
+        "carnatic_equivalent": "hindolam"
+      }
+    },
+    "yaman": {
+      "id": "raga_003",
+      "name": "Yaman",
+      "aliases": ["kalyan", "yaman_kalyan"],
+      "category": "primary",
+      "thaat": "kalyan",
+      "notes": {
+        "aroha": ["Sa", "Re", "Ga", "Ma#", "Pa", "Dha", "Ni", "Sa"],
+        "avaroha": ["Sa", "Ni", "Dha", "Pa", "Ma#", "Ga", "Re", "Sa"],
+        "vadi": "Ga",
+        "samvadi": "Ni"
+      },
+      "time_of_performance": {
+        "preferred_time": "evening",
+        "time_range": "18:00-22:00",
+        "period": "early_night"
+      },
+      "season": "spring",
+      "mood": "romantic",
+      "emotions": ["love", "beauty", "romance"],
+      "deity": "krishna",
+      "iconography": ["garden", "lovers", "moon", "flowers"],
+      "color_palette": ["blue", "white", "pink", "gold"],
+      "visual_elements": {
+        "setting": "garden_pavilion",
+        "figures": ["lovers", "krishna_radha", "courtesans"],
+        "objects": ["flowers", "moon", "musical_instruments"],
+        "architecture": ["pavilion", "garden_walls", "fountains"]
+      },
+      "regional_variations": {
+        "north_indian": "yaman",
+        "south_indian": "kalyani",
+        "carnatic_equivalent": "kalyani"
+      }
+    },
+    "bhimpalasi": {
+      "id": "raga_004",
+      "name": "Bhimpalasi",
+      "aliases": ["bhimpalashri", "palasi"],
+      "category": "primary",
+      "thaat": "kafi",
+      "notes": {
+        "aroha": ["Sa", "ga", "ma", "Pa", "ni", "Sa"],
+        "avaroha": ["Sa", "ni", "Dha", "Pa", "ma", "ga", "Re", "Sa"],
+        "vadi": "ma",
+        "samvadi": "Sa"
+      },
+      "time_of_performance": {
+        "preferred_time": "afternoon",
+        "time_range": "12:00-16:00",
+        "period": "midday"
+      },
+      "season": "summer",
+      "mood": "peaceful",
+      "emotions": ["tranquility", "contentment", "repose"],
+      "deity": "vishnu",
+      "iconography": ["palace", "rest", "attendants", "shade"],
+      "color_palette": ["yellow", "green", "white", "gold"],
+      "visual_elements": {
+        "setting": "palace_courtyard",
+        "figures": ["resting_figure", "attendants", "nobles"],
+        "objects": ["fans", "cushions", "shade_trees"],
+        "architecture": ["palace", "courtyards", "terraces"]
+      },
+      "regional_variations": {
+        "north_indian": "bhimpalasi",
+        "south_indian": "abheri",
+        "carnatic_equivalent": "abheri"
+      }
+    },
+    "darbari": {
+      "id": "raga_005",
+      "name": "Darbari",
+      "aliases": ["darbari_kanada", "kanada"],
+      "category": "primary",
+      "thaat": "asavari",
+      "notes": {
+        "aroha": ["Sa", "Re", "ga", "ma", "Pa", "dha", "ni", "Sa"],
+        "avaroha": ["Sa", "ni", "dha", "Pa", "ma", "ga", "Re", "Sa"],
+        "vadi": "Re",
+        "samvadi": "Pa"
+      },
+      "time_of_performance": {
+        "preferred_time": "late_evening",
+        "time_range": "20:00-24:00",
+        "period": "night"
+      },
+      "season": "autumn",
+      "mood": "regal",
+      "emotions": ["majesty", "grandeur", "dignity"],
+      "deity": "indra",
+      "iconography": ["court", "throne", "courtiers", "ceremony"],
+      "color_palette": ["purple", "gold", "red", "blue"],
+      "visual_elements": {
+        "setting": "royal_court",
+        "figures": ["king", "courtiers", "musicians"],
+        "objects": ["throne", "crown", "royal_regalia"],
+        "architecture": ["palace_hall", "pillars", "domes"]
+      },
+      "regional_variations": {
+        "north_indian": "darbari",
+        "south_indian": "natabhairavi",
+        "carnatic_equivalent": "natabhairavi"
+      }
+    },
+    "marwa": {
+      "id": "raga_006",
+      "name": "Marwa",
+      "aliases": ["marva", "marava"],
+      "category": "primary",
+      "thaat": "marwa",
+      "notes": {
+        "aroha": ["Sa", "re", "Ga", "Ma#", "Dha", "Ni", "Sa"],
+        "avaroha": ["Sa", "Ni", "Dha", "Ma#", "Ga", "re", "Sa"],
+        "vadi": "re",
+        "samvadi": "Dha"
+      },
+      "time_of_performance": {
+        "preferred_time": "sunset",
+        "time_range": "17:00-19:00",
+        "period": "twilight"
+      },
+      "season": "summer",
+      "mood": "contemplative",
+      "emotions": ["reflection", "serenity", "twilight_peace"],
+      "deity": "surya",
+      "iconography": ["sunset", "terrace", "contemplation", "horizon"],
+      "color_palette": ["orange", "purple", "gold", "deep_red"],
+      "visual_elements": {
+        "setting": "palace_terrace",
+        "figures": ["contemplating_figure", "sage", "noble"],
+        "objects": ["sunset", "horizon", "architectural_elements"],
+        "architecture": ["terraces", "balconies", "open_spaces"]
+      },
+      "regional_variations": {
+        "north_indian": "marwa",
+        "south_indian": "purvi_kalyani",
+        "carnatic_equivalent": "purvi_kalyani"
+      }
+    }
+  },
+  "secondary_ragas": {
+    "bageshri": {
+      "id": "raga_007",
+      "name": "Bageshri",
+      "aliases": ["bageshree", "bageshwari"],
+      "category": "secondary",
+      "thaat": "kafi",
+      "parent_raga": "kafi",
+      "time_of_performance": {
+        "preferred_time": "late_night",
+        "time_range": "23:00-03:00",
+        "period": "midnight"
+      },
+      "season": "winter",
+      "mood": "romantic",
+      "emotions": ["longing", "devotion", "romantic_yearning"],
+      "iconography": ["waiting_woman", "lotus", "moonlight", "garden"],
+      "color_palette": ["white", "blue", "silver", "pink"]
+    },
+    "todi": {
+      "id": "raga_008",
+      "name": "Todi",
+      "aliases": ["miyan_ki_todi", "gujari_todi"],
+      "category": "secondary",
+      "thaat": "todi",
+      "time_of_performance": {
+        "preferred_time": "morning",
+        "time_range": "06:00-10:00",
+        "period": "morning"
+      },
+      "season": "spring",
+      "mood": "enchanting",
+      "emotions": ["charm", "allure", "musical_magic"],
+      "iconography": ["musician", "animals", "forest", "enchantment"],
+      "color_palette": ["yellow", "green", "brown", "gold"]
+    },
+    "puriya": {
+      "id": "raga_009",
+      "name": "Puriya",
+      "aliases": ["purvi", "puriya_dhanashri"],
+      "category": "secondary",
+      "thaat": "purvi",
+      "time_of_performance": {
+        "preferred_time": "evening",
+        "time_range": "18:00-21:00",
+        "period": "dusk"
+      },
+      "season": "spring",
+      "mood": "devotional",
+      "emotions": ["purity", "devotion", "spiritual_elevation"],
+      "iconography": ["temple", "worship", "flowers", "incense"],
+      "color_palette": ["saffron", "white", "gold", "red"]
+    },
+    "kafi": {
+      "id": "raga_010",
+      "name": "Kafi",
+      "aliases": ["kafi_thaat", "khamaj"],
+      "category": "secondary",
+      "thaat": "kafi",
+      "time_of_performance": {
+        "preferred_time": "any_time",
+        "time_range": "flexible",
+        "period": "versatile"
+      },
+      "season": "monsoon",
+      "mood": "folk",
+      "emotions": ["earthiness", "simplicity", "rustic_charm"],
+      "iconography": ["village", "folk_dance", "rural_life", "celebration"],
+      "color_palette": ["earth_tones", "green", "brown", "yellow"]
+    }
+  },
+  "seasonal_classification": {
+    "spring": {
+      "ragas": ["yaman", "todi", "puriya", "vasanta", "hindola"],
+      "characteristics": ["flowering", "new_growth", "romance", "beauty"],
+      "color_themes": ["pink", "yellow", "green", "white"],
+      "iconography": ["flowers", "birds", "gardens", "lovers"]
+    },
+    "summer": {
+      "ragas": ["bhimpalasi", "marwa", "deepak", "sarang"],
+      "characteristics": ["heat", "intensity", "rest", "shade"],
+      "color_themes": ["yellow", "orange", "red", "gold"],
+      "iconography": ["sun", "shade", "rest", "cooling_elements"]
+    },
+    "monsoon": {
+      "ragas": ["malkauns", "megha", "miyan_malhar", "kafi"],
+      "characteristics": ["rain", "clouds", "romance", "fertility"],
+      "color_themes": ["dark_blue", "grey", "green", "black"],
+      "iconography": ["clouds", "rain", "peacocks", "rivers"]
+    },
+    "autumn": {
+      "ragas": ["darbari", "jaunpuri", "asavari"],
+      "characteristics": ["harvest", "maturity", "dignity", "fulfillment"],
+      "color_themes": ["gold", "brown", "orange", "red"],
+      "iconography": ["harvest", "maturity", "royal_courts", "ceremonies"]
+    },
+    "winter": {
+      "ragas": ["bhairav", "bageshri", "lalit"],
+      "characteristics": ["cold", "contemplation", "devotion", "austerity"],
+      "color_themes": ["white", "blue", "grey", "silver"],
+      "iconography": ["snow", "fire", "blankets", "meditation"]
+    },
+    "late_winter": {
+      "ragas": ["basanta", "hindola"],
+      "characteristics": ["transition", "hope", "anticipation", "preparation"],
+      "color_themes": ["pale_colors", "soft_hues", "emerging_greens"],
+      "iconography": ["early_buds", "preparation", "anticipation"]
+    }
+  },
+  "time_based_classification": {
+    "dawn": {
+      "time_range": "04:00-07:00",
+      "ragas": ["bhairav", "lalit", "ramkali"],
+      "mood": "devotional",
+      "iconography": ["sunrise", "temple", "prayer", "awakening"]
+    },
+    "morning": {
+      "time_range": "07:00-12:00",
+      "ragas": ["todi", "bilaval", "alhaiya_bilaval"],
+      "mood": "energetic",
+      "iconography": ["activity", "work", "brightness", "energy"]
+    },
+    "afternoon": {
+      "time_range": "12:00-16:00",
+      "ragas": ["bhimpalasi", "sarang", "multani"],
+      "mood": "peaceful",
+      "iconography": ["rest", "shade", "midday_heat", "repose"]
+    },
+    "evening": {
+      "time_range": "16:00-20:00",
+      "ragas": ["yaman", "puriya", "marwa"],
+      "mood": "romantic",
+      "iconography": ["sunset", "romance", "beauty", "leisure"]
+    },
+    "night": {
+      "time_range": "20:00-24:00",
+      "ragas": ["darbari", "adana", "jaunpuri"],
+      "mood": "regal",
+      "iconography": ["court", "ceremony", "formality", "grandeur"]
+    },
+    "midnight": {
+      "time_range": "00:00-04:00",
+      "ragas": ["malkauns", "bageshri", "darbari"],
+      "mood": "meditative",
+      "iconography": ["solitude", "contemplation", "mystery", "depth"]
+    }
+  },
+  "emotional_classification": {
+    "devotional": {
+      "ragas": ["bhairav", "puriya", "ramkali"],
+      "characteristics": ["spirituality", "reverence", "worship"],
+      "visual_elements": ["temples", "deities", "prayer", "ritual"]
+    },
+    "romantic": {
+      "ragas": ["yaman", "bageshri", "khamaj"],
+      "characteristics": ["love", "beauty", "attraction", "longing"],
+      "visual_elements": ["lovers", "gardens", "flowers", "moonlight"]
+    },
+    "heroic": {
+      "ragas": ["darbari", "jaunpuri", "adana"],
+      "characteristics": ["courage", "strength", "nobility", "valor"],
+      "visual_elements": ["warriors", "battles", "courts", "ceremonies"]
+    },
+    "peaceful": {
+      "ragas": ["bhimpalasi", "sarang", "bilaval"],
+      "characteristics": ["tranquility", "calm", "serenity", "rest"],
+      "visual_elements": ["rest", "nature", "harmony", "balance"]
+    },
+    "melancholic": {
+      "ragas": ["malkauns", "darbari", "asavari"],
+      "characteristics": ["sadness", "longing", "introspection", "depth"],
+      "visual_elements": ["solitude", "darkness", "contemplation", "separation"]
+    }
+  },
+  "regional_styles": {
+    "rajput": {
+      "preferred_ragas": ["bhairav", "megha", "bageshri", "gauda"],
+      "characteristics": ["bold_colors", "geometric_patterns", "royal_themes"],
+      "color_palette": ["red", "gold", "white", "green"]
+    },
+    "pahari": {
+      "preferred_ragas": ["yaman", "todi", "vasanta", "kedar"],
+      "characteristics": ["delicate_features", "natural_settings", "romantic_themes"],
+      "color_palette": ["soft_blues", "greens", "pinks", "whites"]
+    },
+    "deccan": {
+      "preferred_ragas": ["malkauns", "puriya", "saveri", "bilaval"],
+      "characteristics": ["persian_influence", "architectural_elements", "formal_compositions"],
+      "color_palette": ["deep_blues", "purples", "golds", "whites"]
+    },
+    "mughal": {
+      "preferred_ragas": ["darbari", "hindola", "malashri", "shri"],
+      "characteristics": ["court_scenes", "elaborate_details", "imperial_themes"],
+      "color_palette": ["rich_colors", "gold", "jewel_tones", "intricate_patterns"]
+    }
+  },
+  "iconographic_elements": {
+    "natural": {
+      "elements": ["trees", "flowers", "rivers", "mountains", "animals", "birds"],
+      "seasonal_associations": {
+        "spring": ["flowering_trees", "birds", "new_leaves"],
+        "summer": ["shade_trees", "cooling_water", "fans"],
+        "monsoon": ["dark_clouds", "rain", "peacocks", "rivers"],
+        "autumn": ["harvest", "golden_fields", "mature_trees"],
+        "winter": ["bare_trees", "snow", "fire", "warm_clothing"]
+      }
+    },
+    "architectural": {
+      "elements": ["temples", "palaces", "pavilions", "gardens", "courtyards"],
+      "styles": ["hindu_temple", "islamic_architecture", "garden_pavilion", "royal_court"]
+    },
+    "human": {
+      "figures": ["lovers", "musicians", "dancers", "ascetics", "royalty", "devotees"],
+      "poses": ["standing", "sitting", "dancing", "playing_instruments", "in_prayer"]
+    },
+    "divine": {
+      "deities": ["krishna", "radha", "shiva", "parvati", "vishnu", "lakshmi"],
+      "symbols": ["lotus", "conch", "wheel", "trident", "peacock_feather"]
+    }
+  }
+}

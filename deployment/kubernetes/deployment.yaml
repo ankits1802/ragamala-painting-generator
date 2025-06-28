@@ -1,0 +1,817 @@
+# Kubernetes deployment configuration for Ragamala Painting Generator
+# This file defines the complete deployment including API, training, and supporting services
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ragamala-painting-generator
+  labels:
+    name: ragamala-painting-generator
+    environment: production
+    project: ragamala-ai
+
+---
+# ConfigMap for application configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ragamala-config
+  namespace: ragamala-painting-generator
+data:
+  # API Configuration
+  API_PORT: "8000"
+  GRADIO_PORT: "7860"
+  JUPYTER_PORT: "8888"
+  TENSORBOARD_PORT: "6006"
+  MLFLOW_PORT: "5000"
+  
+  # Model Configuration
+  MODEL_PATH: "/app/models/sdxl-ragamala"
+  LORA_PATH: "/app/models/lora_weights"
+  DATASET_PATH: "/app/data"
+  OUTPUT_PATH: "/app/outputs"
+  
+  # Training Configuration
+  BATCH_SIZE: "4"
+  LEARNING_RATE: "1e-4"
+  MAX_TRAIN_STEPS: "10000"
+  GRADIENT_ACCUMULATION_STEPS: "4"
+  MIXED_PRECISION: "fp16"
+  
+  # AWS Configuration
+  AWS_REGION: "us-west-2"
+  S3_BUCKET: "ragamala-data-bucket"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  
+  # Database Configuration
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "ragamala_db"
+
+---
+# Secret for sensitive configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ragamala-secrets
+  namespace: ragamala-painting-generator
+type: Opaque
+data:
+  # Base64 encoded secrets
+  API_KEY: "cmFnYW1hbGFfYXBpX2tleV8xMjM0NQ=="  # ragamala_api_key_12345
+  DB_PASSWORD: "cGFzc3dvcmQxMjM="  # password123
+  AWS_ACCESS_KEY_ID: "QUtJQUlPU0ZPRE5ON0VYQU1QTEU="
+  AWS_SECRET_ACCESS_KEY: "d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQ=="
+  HUGGINGFACE_TOKEN: "aGZfVG9rZW5fRXhhbXBsZV8xMjM0NQ=="
+
+---
+# PersistentVolumeClaim for model storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ragamala-models-pvc
+  namespace: ragamala-painting-generator
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp3-csi
+
+---
+# PersistentVolumeClaim for data storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ragamala-data-pvc
+  namespace: ragamala-painting-generator
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Gi
+  storageClassName: efs-csi
+
+---
+# PersistentVolumeClaim for outputs
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ragamala-outputs-pvc
+  namespace: ragamala-painting-generator
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: efs-csi
+
+---
+# Redis Deployment for caching
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: ragamala-painting-generator
+  labels:
+    app: redis
+    component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      volumes:
+      - name: redis-data
+        emptyDir: {}
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: ragamala-painting-generator
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+
+---
+# PostgreSQL Deployment for metadata
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  namespace: ragamala-painting-generator
+  labels:
+    app: postgres
+    component: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: ragamala-config
+              key: DB_NAME
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ragamala-secrets
+              key: DB_PASSWORD
+        ports:
+        - containerPort: 5432
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-data
+        emptyDir: {}
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: ragamala-painting-generator
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+# Training Job Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ragamala-training
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-training
+    component: training
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ragamala-training
+  template:
+    metadata:
+      labels:
+        app: ragamala-training
+    spec:
+      nodeSelector:
+        accelerator: nvidia-tesla-v100
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: training
+        image: ragamala/training:latest
+        command: ["python", "/app/scripts/train.py"]
+        env:
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: PYTHONPATH
+          value: "/app"
+        envFrom:
+        - configMapRef:
+            name: ragamala-config
+        - secretRef:
+            name: ragamala-secrets
+        resources:
+          requests:
+            memory: "16Gi"
+            cpu: "4"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "32Gi"
+            cpu: "8"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: models-volume
+          mountPath: /app/models
+        - name: data-volume
+          mountPath: /app/data
+        - name: outputs-volume
+          mountPath: /app/outputs
+        - name: shared-memory
+          mountPath: /dev/shm
+        ports:
+        - containerPort: 8888
+          name: jupyter
+        - containerPort: 6006
+          name: tensorboard
+        - containerPort: 5000
+          name: mlflow
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 300
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8888
+          initialDelaySeconds: 60
+          periodSeconds: 10
+      volumes:
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: ragamala-models-pvc
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: ragamala-data-pvc
+      - name: outputs-volume
+        persistentVolumeClaim:
+          claimName: ragamala-outputs-pvc
+      - name: shared-memory
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Gi
+
+---
+# Training Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-training-service
+  namespace: ragamala-painting-generator
+spec:
+  selector:
+    app: ragamala-training
+  ports:
+    - name: jupyter
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+    - name: tensorboard
+      protocol: TCP
+      port: 6006
+      targetPort: 6006
+    - name: mlflow
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
+
+---
+# API Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ragamala-api
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-api
+    component: inference
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ragamala-api
+  template:
+    metadata:
+      labels:
+        app: ragamala-api
+    spec:
+      nodeSelector:
+        accelerator: nvidia-tesla-t4
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: api
+        image: ragamala/api:latest
+        command: ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+        env:
+        - name: CUDA_VISIBLE_DEVICES
+          value: "0"
+        - name: PYTHONPATH
+          value: "/app"
+        envFrom:
+        - configMapRef:
+            name: ragamala-config
+        - secretRef:
+            name: ragamala-secrets
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "2"
+            nvidia.com/gpu: 1
+          limits:
+            memory: "16Gi"
+            cpu: "4"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: models-volume
+          mountPath: /app/models
+          readOnly: true
+        - name: outputs-volume
+          mountPath: /app/outputs
+        - name: shared-memory
+          mountPath: /dev/shm
+        ports:
+        - containerPort: 8000
+          name: api
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 120
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 12
+      volumes:
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: ragamala-models-pvc
+      - name: outputs-volume
+        persistentVolumeClaim:
+          claimName: ragamala-outputs-pvc
+      - name: shared-memory
+        emptyDir:
+          medium: Memory
+          sizeLimit: 4Gi
+
+---
+# API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-api-service
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-api
+spec:
+  selector:
+    app: ragamala-api
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+
+---
+# Gradio Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ragamala-frontend
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-frontend
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ragamala-frontend
+  template:
+    metadata:
+      labels:
+        app: ragamala-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: ragamala/frontend:latest
+        command: ["python", "/app/frontend/gradio_app.py"]
+        env:
+        - name: API_BASE_URL
+          value: "http://ragamala-api-service:8000"
+        - name: PYTHONPATH
+          value: "/app"
+        envFrom:
+        - configMapRef:
+            name: ragamala-config
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "1"
+        ports:
+        - containerPort: 7860
+          name: gradio
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 7860
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 7860
+          initialDelaySeconds: 30
+          periodSeconds: 10
+
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ragamala-frontend-service
+  namespace: ragamala-painting-generator
+spec:
+  selector:
+    app: ragamala-frontend
+  ports:
+    - name: gradio
+      protocol: TCP
+      port: 7860
+      targetPort: 7860
+  type: ClusterIP
+
+---
+# Horizontal Pod Autoscaler for API
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ragamala-api-hpa
+  namespace: ragamala-painting-generator
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ragamala-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ragamala-ingress
+  namespace: ragamala-painting-generator
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.ragamala.ai
+    - app.ragamala.ai
+    - training.ragamala.ai
+    secretName: ragamala-tls
+  rules:
+  - host: api.ragamala.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ragamala-api-service
+            port:
+              number: 8000
+  - host: app.ragamala.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ragamala-frontend-service
+            port:
+              number: 7860
+  - host: training.ragamala.ai
+    http:
+      paths:
+      - path: /jupyter
+        pathType: Prefix
+        backend:
+          service:
+            name: ragamala-training-service
+            port:
+              number: 8888
+      - path: /tensorboard
+        pathType: Prefix
+        backend:
+          service:
+            name: ragamala-training-service
+            port:
+              number: 6006
+      - path: /mlflow
+        pathType: Prefix
+        backend:
+          service:
+            name: ragamala-training-service
+            port:
+              number: 5000
+
+---
+# NetworkPolicy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ragamala-network-policy
+  namespace: ragamala-painting-generator
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: nginx-ingress
+  - from:
+    - podSelector: {}
+  egress:
+  - to: []
+
+---
+# ServiceMonitor for Prometheus monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ragamala-api-monitor
+  namespace: ragamala-painting-generator
+  labels:
+    app: ragamala-api
+spec:
+  selector:
+    matchLabels:
+      app: ragamala-api
+  endpoints:
+  - port: api
+    path: /metrics
+    interval: 30s
+
+---
+# PodDisruptionBudget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ragamala-api-pdb
+  namespace: ragamala-painting-generator
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ragamala-api
+
+---
+# Job for data initialization
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ragamala-data-init
+  namespace: ragamala-painting-generator
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: data-init
+        image: ragamala/data-init:latest
+        command: ["python", "/app/scripts/download_data.py"]
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+        envFrom:
+        - configMapRef:
+            name: ragamala-config
+        - secretRef:
+            name: ragamala-secrets
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: models-volume
+          mountPath: /app/models
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "2"
+          limits:
+            memory: "8Gi"
+            cpu: "4"
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: ragamala-data-pvc
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: ragamala-models-pvc
+
+---
+# CronJob for model backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ragamala-model-backup
+  namespace: ragamala-painting-generator
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup
+            image: ragamala/backup:latest
+            command: ["python", "/app/scripts/backup_models.py"]
+            env:
+            - name: PYTHONPATH
+              value: "/app"
+            envFrom:
+            - configMapRef:
+                name: ragamala-config
+            - secretRef:
+                name: ragamala-secrets
+            volumeMounts:
+            - name: models-volume
+              mountPath: /app/models
+              readOnly: true
+            resources:
+              requests:
+                memory: "2Gi"
+                cpu: "1"
+              limits:
+                memory: "4Gi"
+                cpu: "2"
+          volumes:
+          - name: models-volume
+            persistentVolumeClaim:
+              claimName: ragamala-models-pvc
+
+---
+# ResourceQuota for namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ragamala-quota
+  namespace: ragamala-painting-generator
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "80Gi"
+    requests.nvidia.com/gpu: "8"
+    limits.cpu: "40"
+    limits.memory: "160Gi"
+    limits.nvidia.com/gpu: "8"
+    persistentvolumeclaims: "10"
+    services: "10"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# LimitRange for default resource limits
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ragamala-limits
+  namespace: ragamala-painting-generator
+spec:
+  limits:
+  - default:
+      cpu: "1"
+      memory: "2Gi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "256Mi"
+    type: Container
