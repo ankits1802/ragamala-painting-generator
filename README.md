@@ -93,25 +93,27 @@ SDXL 1.0 Base Model
 
 ### Training Objective
 
-\[
-\mathcal{L}_{total} = \mathcal{L}_{diffusion} + \lambda_1 \mathcal{L}_{cultural} + \lambda_2 \mathcal{L}_{perceptual} + \lambda_3 \mathcal{L}_{style}
-\]
+The total loss is  
 
-- \( \mathcal{L}_{diffusion} \): Standard DDPM denoising loss  
-- \( \mathcal{L}_{cultural} \): Cultural authenticity preservation loss  
-- \( \mathcal{L}_{perceptual} \): CLIP-based semantic alignment loss  
-- \( \mathcal{L}_{style} \): Style consistency enforcement loss  
+**$\mathcal{L}_{total}$** = $\mathcal{L}_{diffusion}$ $+$ $\lambda_1$ $\mathcal{L}_{cultural}$ $+$ $\lambda_2$ $\mathcal{L}_{perceptual}$ $+$ $\lambda_3$ \mathcal{L}_{style}$
 
-### LoRA Configuration
+where:
+- **$\mathcal{L}_{diffusion}$**: Standard DDPM denoising loss  
+- **$\mathcal{L}_{cultural}$**: Cultural authenticity preservation loss  
+- **$\mathcal{L}_{perceptual}$**: CLIP-based semantic alignment loss  
+- **$\mathcal{L}_{style}$**: Style consistency enforcement loss  
 
-\[
-W = W_0 + \frac{\alpha}{r} \cdot BA
-\]
+### ⚙️ LoRA Configuration
 
-- \( W_0 \): Pre-trained weight matrix  
-- \( B \in \mathbb{R}^{d \times r}, A \in \mathbb{R}^{r \times k} \): Trainable matrices  
-- \( r = 64 \): Rank  
-- \( \alpha = 32 \): Scaling factor  
+The LoRA-adjusted weight matrix is defined as:
+
+$W = W_0 + \frac{\alpha}{r} \cdot BA$
+
+- $W_0$: Pre-trained weight matrix  
+- $B \in \mathbb{R}^{d \times r},\ A \in \mathbb{R}^{r \times k}$: Trainable matrices  
+- $r = 64$: Rank  
+- $\alpha = 32$: Scaling factor
+ 
 
 ---
 
@@ -415,12 +417,6 @@ MIT License. See `LICENSE` file for full text.
 }
 ```
 
----
-
 **🎨 Preserving Cultural Heritage Through AI 🎨**
 
 *Made with ❤️ for the preservation and celebration of Indian classical art traditions*
-
-```
-
----
