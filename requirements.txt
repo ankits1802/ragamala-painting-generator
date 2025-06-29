@@ -13,6 +13,7 @@ compel>=2.0.0
 invisible-watermark>=0.2.0
 omegaconf>=2.3.0
 peft>=0.4.0
+bitsandbytes
 
 # Computer Vision and Image Processing
 opencv-python>=4.8.0
@@ -61,4 +62,38 @@ slowapi>=0.1.9
 redis>=4.6.0
 hiredis>=2.2.0
 
-# Fronten
+# Frontend
+gradio
+streamlit
+
+# Pre-commit Hooks and Code Quality
+pre-commit
+black
+isort
+flake8
+mypy
+
+# Testing
+pytest
+
+# Additional Utilities
+requests
+pyyaml
+
+# Optional: For GPU monitoring and system info
+psutil
+nvidia-ml-py3
+
+# Optional: For image metrics and evaluation
+lpips
+imageio
+
+# Optional: For YAML config parsing
+omegaconf
+
+# Optional: For logging and experiment tracking
+tensorboard
+wandb
+
+# Optional: For cultural/language processing
+nltk
