@@ -95,7 +95,9 @@ SDXL 1.0 Base Model
 
 The total loss is  
 
-**$\mathcal{L}_{total}$** = $\mathcal{L}_{diffusion}$ $+$ $\lambda_1$ $\mathcal{L}_{cultural}$ $+$ $\lambda_2$ $\mathcal{L}_{perceptual}$ $+$ $\lambda_3$ \mathcal{L}_{style}$
+**$\mathcal{L}_{\text{total}}$** = **$\mathcal{L}_{\text{diffusion}}$** + **$\lambda_1 \mathcal{L}_{\text{cultural}}$** + **$\lambda_2 \mathcal{L}_{\text{perceptual}}$** + **$\lambda_3$ $\mathcal{L}_{\text{style}}$**
+
+
 
 where:
 - **$\mathcal{L}_{diffusion}$**: Standard DDPM denoising loss  
